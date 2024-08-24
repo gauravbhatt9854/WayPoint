@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import io from "socket.io-client";
 import { useAuth0 } from "@auth0/auth0-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { UserContext } from "../src/App";
 
 const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
 
@@ -14,7 +15,9 @@ delete L.Icon.Default.prototype._getIconUrl;
 
 const Globe = () => {
   const { user, isAuthenticated } = useAuth0();
-  const [clients, setClients] = useState([]);
+  // const [clients, setClients] = useState([]);
+  const { clients, setClients } = useContext(UserContext);
+
   const [userLocation, setUserLocation] = useState([23, 79]);
 
   // Custom icon for the logged-in user (uses the profile picture)
@@ -80,12 +83,9 @@ const Globe = () => {
   };
 
   return (
-    <>
+    <div className="h-[95%] ">
       {isAuthenticated ? (
-        <div className="h-screen w-screen border-blue-600 border-4 flex flex-col">
-          <h1 className="text-center text-red-500 text-2xl pt-5 font-bold bg-blue-300">
-            YOUR MAP IS HERE
-          </h1>
+        <div className="w-screen h-[90%] border-blue-600 border-4 flex-col gap-1">
           <MapContainer
             center={userLocation}
             zoom={6}
@@ -116,7 +116,7 @@ const Globe = () => {
       ) : (
         <div>Login first</div>
       )}
-    </>
+    </div>
   );
 };
 

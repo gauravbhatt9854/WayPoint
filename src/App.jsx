@@ -1,13 +1,20 @@
 import "./App.css";
 import Globe from "../components/Globe";
-import Login from "../components/Login";
+import LoginButton from "../components/LogButton";
+import { useState, createContext, useContext } from "react";
+
+const UserContext = createContext();
 
 function App() {
+  const [clients, setClients] = useState([]);
   return (
-    <>
-      <Login></Login>
-      <Globe></Globe>
-    </>
+    <UserContext.Provider value={{ clients, setClients }}>
+      <div className="h-screen w-screen overflow-hidden ">
+        <LoginButton></LoginButton>
+        <Globe></Globe>
+      </div>
+    </UserContext.Provider>
   );
 }
-export default App;
+// export default App;
+export { App, UserContext };

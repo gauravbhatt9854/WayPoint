@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import LoginButton from "./LogButton";
 const Login = () => {
   return (
-    <div className="w-screen h-50 border-green-500  border-2 p-5">
+    <div className="w-screen h-16 border-green-200  border-2 overflow-scroll ">
       <LoginButton></LoginButton>
     </div>
   );
