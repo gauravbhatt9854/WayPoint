@@ -1,0 +1,55 @@
+import { Server } from "socket.io";
+import http from "http";
+import express from "express";
+import cors from "cors";
+ 
+const app = express();
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+let clients = [];
+
+io.on("connection", (socket) => {
+  console.log("New client connected");
+
+  socket.on("userLocation", (data) => {
+    console.log("Received user location:", data);
+    const { latitude, longitude } = data;
+
+    // Add or update the client in the array
+    const existingClient = clients.find(
+      (client) => client.socketId === socket.id
+    );
+    if (existingClient) {
+      existingClient.latitude = latitude;
+      existingClient.longitude = longitude;
+    } else {
+      clients.push({
+        socketId: socket.id,
+        latitude,
+        longitude,
+      });
+    }
+
+    console.log("loc -> ", latitude, "  ", longitude);
+
+    // Emit the list of all clients to all connected clients
+    io.emit("allLocations", clients);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+    clients = clients.filter((client) => client.socketId !== socket.id);
+
+    // Emit the updated list of all clients to all connected clients
+    io.emit("allLocations", clients);
+  });
+});
+
+export { app, io, server };
