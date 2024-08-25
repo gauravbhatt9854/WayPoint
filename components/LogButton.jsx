@@ -2,6 +2,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import React, { useEffect } from "react";
 import { UserContext } from "../src/App";
 import Client1 from "./Client1";
+import Chat from "./Chat";
 
 const LoginButton = () => {
   const { user, isAuthenticated, isLoading, loginWithRedirect, logout } =

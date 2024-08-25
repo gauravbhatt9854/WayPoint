@@ -5,12 +5,8 @@ export const Client1 = () => {
   const { clients } = useContext(UserContext);
   return (
     <div className=" overflow-scroll">
-      {clients.map((item) => {
-        return (
-          <>
-            <h3>{item.username}</h3>
-          </>
-        );
+      {clients.map((item, index) => {
+        return <h3 key={index}>{item.username}</h3>;
       })}
     </div>
   );
