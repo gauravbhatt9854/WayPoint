@@ -1,43 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import io from "socket.io-client";
-import { useAuth0 } from "@auth0/auth0-react";
+import { UserContext } from "../src/App";
 
-const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER2;
+const SERVER_URL2 = import.meta.env.VITE_SOCKET_SERVER2;
 
-const socket = io(SERVER_URL);
+const socket = io(SERVER_URL2);
 
 const Chat = () => {
-  const { user, isAuthenticated } = useAuth0();
+  const { user } = useContext(UserContext);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    const loc_share = () => {
-      if (navigator.geolocation && user) {
-        // Ensure `user` is defined
-        navigator.geolocation.getCurrentPosition((position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          console.log(latitude, " <<--->> ", longitude);
-          socket.emit("loc-res", {
-            l1: latitude,
-            l2: longitude,
-            username: user?.name || "name not found",
-            profileUrl: user.picture || "fallback-image-url", // Send the profile URL
-          });
-
-          setUserLocation([latitude, longitude]);
-        });
-      } else {
-        console.error(
-          "Geolocation is not supported by this browser or user data is not ready."
-        );
-      }
+    const user_data = () => {
+      socket.emit("user_data", {
+        username: user?.name || "name not found",
+        profileUrl: user?.picture || "fallback-image-url",
+      });
     };
-    // Listen for incoming messages
-    setTimeout(() => {
-      loc_share();
-    }, 5000);
+    user_data();
+  }, [user, socket]);
+
+  useEffect(() => {
     socket.on("newChatMessage", (data) => {
       console.log("getting");
       setMessages((prevMessages) => [...prevMessages, data]);
@@ -46,15 +30,12 @@ const Chat = () => {
     return () => {
       socket.off("newChatMessage");
     };
-  }, []);
+  }, [socket]);
 
   const sendMessage = (e) => {
     e.preventDefault();
     if (message.trim()) {
-      // Send message to server
       socket.emit("chatMessage", message);
-
-      // Optionally display your own message immediately
       setMessages((prevMessages) => [
         ...prevMessages,
         {
@@ -64,32 +45,7 @@ const Chat = () => {
           timestamp: new Date(),
         },
       ]);
-
-      // Clear the input
       setMessage("");
-    }
-  };
-
-  const loc_share = () => {
-    if (navigator.geolocation && user) {
-      // Ensure `user` is defined
-      navigator.geolocation.getCurrentPosition((position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        console.log(latitude, " <<--->> ", longitude);
-        socket.emit("loc-res", {
-          l1: latitude,
-          l2: longitude,
-          username: user.name || "name not found",
-          profileUrl: user.picture || "fallback-image-url", // Send the profile URL
-        });
-
-        setUserLocation([latitude, longitude]);
-      });
-    } else {
-      console.error(
-        "Geolocation is not supported by this browser or user data is not ready."
-      );
     }
   };
 
@@ -143,6 +99,8 @@ const Chat = () => {
           >
             Send
           </button>
+          <button onClick={() => console.log(user?.name)}>name</button>
+          <br />
         </form>
       </div>
     </div>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
 import io from "socket.io-client";
-import { useAuth0 } from "@auth0/auth0-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -14,9 +13,8 @@ const socket = io(SERVER_URL);
 delete L.Icon.Default.prototype._getIconUrl;
 
 const Globe = () => {
-  const { user, isAuthenticated } = useAuth0();
-  // const [clients, setClients] = useState([]);
-  const { clients, setClients } = useContext(UserContext);
+  const { clients, setClients, user, isAuthenticated } =
+    useContext(UserContext);
 
   const [userLocation, setUserLocation] = useState([23, 79]);
 

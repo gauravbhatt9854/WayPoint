@@ -3,13 +3,17 @@ import Globe from "../components/Globe";
 import LoginButton from "../components/LogButton";
 import { useState, createContext, useContext } from "react";
 import Chat from "../components/Chat";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const UserContext = createContext();
 
 function App() {
+  const { user, isAuthenticated } = useAuth0();
   const [clients, setClients] = useState([]);
   return (
-    <UserContext.Provider value={{ clients, setClients }}>
+    <UserContext.Provider
+      value={{ clients, setClients, user, isAuthenticated }}
+    >
       <div className="h-screen w-screen overflow-scroll ">
         <LoginButton></LoginButton>
         <Globe></Globe>
