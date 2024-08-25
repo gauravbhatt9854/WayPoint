@@ -1,19 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
-import io from "socket.io-client";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { UserContext } from "../src/App";
 
-const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
-
-const socket = io(SERVER_URL);
-
 // Fix Leaflet's default icon paths
 delete L.Icon.Default.prototype._getIconUrl;
 
 const Globe = () => {
-  const { clients, setClients, user, isAuthenticated } =
+  // const [clients, setClients] = useState([]);
+  const { clients, setClients, user, isAuthenticated, socket } =
     useContext(UserContext);
 
   const [userLocation, setUserLocation] = useState([23, 79]);

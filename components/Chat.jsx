@@ -1,25 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
-import io from "socket.io-client";
 import { UserContext } from "../src/App";
 
-const SERVER_URL2 = import.meta.env.VITE_SOCKET_SERVER2;
-
-const socket = io(SERVER_URL2);
-
 const Chat = () => {
-  const { user } = useContext(UserContext);
+  const { user, socket } = useContext(UserContext);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-
-  useEffect(() => {
-    const user_data = () => {
-      socket.emit("user_data", {
-        username: user?.name || "name not found",
-        profileUrl: user?.picture || "fallback-image-url",
-      });
-    };
-    user_data();
-  }, [user, socket]);
 
   useEffect(() => {
     socket.on("newChatMessage", (data) => {
@@ -99,8 +84,6 @@ const Chat = () => {
           >
             Send
           </button>
-          <button onClick={() => console.log(user?.name)}>name</button>
-          <br />
         </form>
       </div>
     </div>
