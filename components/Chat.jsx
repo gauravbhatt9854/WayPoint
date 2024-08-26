@@ -8,18 +8,18 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    // Listen for new chat messages from the server
-    socket.on("newChatMessage", (data) => {
-      setMessages((prevMessages) => [...prevMessages, data]);
-    });
+    const handleNewChatMessage = (data) => {
+      // console.log(data.message);
+      setMessages((prevMessages) => [...prevMessages, data.message]);
+    };
 
-    // Cleanup the event listener when the component unmounts
+    socket.on("newChatMessage", handleNewChatMessage);
+
     return () => {
-      socket.off("newChatMessage");
+      socket.off("newChatMessage", handleNewChatMessage);
     };
   }, [socket]);
 
-  // Scroll to the bottom when a new message is added
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -27,7 +27,6 @@ const Chat = () => {
   const sendMessage = (e) => {
     e.preventDefault();
     if (message.trim()) {
-      // Emit the message to the server
       socket.emit("chatMessage", {
         username: user?.name || "Anonymous",
         message: message,
@@ -35,7 +34,6 @@ const Chat = () => {
         timestamp: new Date(),
       });
 
-      // Add the message locally for instant feedback
       setMessages((prevMessages) => [
         ...prevMessages,
         {
@@ -53,7 +51,6 @@ const Chat = () => {
     <div className="fixed bottom-4 right-4 w-80 h-96 bg-white shadow-lg rounded-lg border border-gray-300 flex flex-col z-50">
       {isAuthenticated ? (
         <div className="flex flex-col h-full">
-          {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg, index) => (
               <div
@@ -88,7 +85,6 @@ const Chat = () => {
             ))}
             <div ref={messagesEndRef}></div>
           </div>
-          {/* Input Field and Send Button */}
           <form
             onSubmit={sendMessage}
             className="flex p-2 border-t border-gray-300"
