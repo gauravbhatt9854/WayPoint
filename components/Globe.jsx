@@ -3,68 +3,65 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { UserContext } from "../src/App";
-
-// Fix Leaflet's default icon paths
-delete L.Icon.Default.prototype._getIconUrl;
+import Chat from "./Chat";
 
 const Globe = () => {
-  // const [clients, setClients] = useState([]);
-  const { clients, setClients, user, isAuthenticated, socket } =
-    useContext(UserContext);
+  const {
+    clients,
+    setClients,
+    user,
+    isAuthenticated,
+    socket,
+    isChat,
+    setIsChat,
+  } = useContext(UserContext);
 
   const [userLocation, setUserLocation] = useState([23, 79]);
 
-  // Custom icon for the logged-in user (uses the profile picture)
   const userIcon = new L.Icon({
-    iconUrl: user?.picture || "fallback-image-url", // Fallback if no profile picture
-    iconSize: [40, 40], // Customize the size as needed
-    iconAnchor: [20, 40], // Adjust the anchor point (center of the icon)
-    popupAnchor: [0, -40], // Position the popup correctly above the icon
+    iconUrl: user?.picture || "fallback-image-url",
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
   });
 
-  // Default icon for other clients (uses profile URLs if available)
   const getClientIcon = (profileUrl) => {
     return new L.Icon({
       iconUrl: profileUrl || "fallback-image-url",
-      iconSize: [40, 40], // Customize the size as needed
-      iconAnchor: [20, 40], // Adjust the anchor point (center of the icon)
-      popupAnchor: [0, -40], // Position the popup correctly above the icon
+      iconSize: [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor: [0, -40],
     });
   };
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (user) loc_share(); // Only call loc_share if the user object is loaded
+      if (user) loc_share();
     }, 5000);
 
     socket.on("allLocations", (data) => {
-      console.log("Received all locations");
       setClients(data);
     });
 
-    socket.on("new-user", (soc) => {
-      console.log("New user joined with socket: ", soc);
-    });
+    socket.on("new-user", (soc) => {});
 
     return () => {
       clearInterval(interval);
       socket.off("allLocations");
       socket.off("new-user");
     };
-  }, [user]); // Add `user` as a dependency to re-run the effect when it changes
+  }, [user]);
 
   const loc_share = () => {
     if (navigator.geolocation && user) {
-      // Ensure `user` is defined
       navigator.geolocation.getCurrentPosition((position) => {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
-        console.log(latitude, " <<--->> ", longitude);
         socket.emit("loc-res", {
           l1: latitude,
           l2: longitude,
           username: user.name || "name not found",
-          profileUrl: user.picture || "fallback-image-url", // Send the profile URL
+          profileUrl: user.picture || "fallback-image-url",
         });
 
         setUserLocation([latitude, longitude]);
@@ -77,38 +74,47 @@ const Globe = () => {
   };
 
   return (
-    <div className="h-[95%] ">
+    <div className="relative h-[85%] w-full">
       {isAuthenticated ? (
-        <div className="w-screen h-[90%] border-blue-600 border-4 flex-col gap-1">
-          <MapContainer
-            center={userLocation}
-            zoom={6}
-            scrollWheelZoom={false}
-            className="h-full w-full"
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {/* User's Marker */}
-            <Marker position={userLocation} icon={userIcon}>
-              <Popup>{user.name}</Popup>
-            </Marker>
-
-            {/* Markers for Other Clients */}
-            {clients.map(({ id, l1, l2, username, profileUrl }) => (
-              <Marker
-                key={id}
-                position={[l1, l2]}
-                icon={getClientIcon(profileUrl)}
-              >
-                <Popup>{username} is here in the map</Popup>
+        <>
+          <div className="overflow-hidden h-full">
+            <MapContainer
+              center={userLocation}
+              zoom={6}
+              scrollWheelZoom={false}
+              className="absolute inset-0 h-full w-full z-0"
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker position={userLocation} icon={userIcon}>
+                <Popup>{user.name}</Popup>
               </Marker>
-            ))}
-          </MapContainer>
-        </div>
+              {clients.map(({ id, l1, l2, username, profileUrl }) => (
+                <Marker
+                  key={id}
+                  position={[l1, l2]}
+                  icon={getClientIcon(profileUrl)}
+                >
+                  <Popup>{username} is here on the map</Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
+          {/* Chat Component */}
+          {isChat && (
+            <div className="fixed bottom-4 right-4 w-80 h-80 bg-white shadow-lg rounded-lg overflow-hidden z-50">
+              <Chat />
+            </div>
+          )}
+        </>
       ) : (
-        <div>Login first</div>
+        <div>
+          <h3 className="text-2xl  font-mono">
+            Use your Google account to login
+          </h3>
+        </div>
       )}
     </div>
   );

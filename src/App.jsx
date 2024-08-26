@@ -1,8 +1,7 @@
 import "./App.css";
 import Globe from "../components/Globe";
-import LoginButton from "../components/LogButton";
-import { useState, createContext, useContext } from "react";
-import Chat from "../components/Chat";
+import Header from "../components/Header";
+import { useState, createContext } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import io from "socket.io-client";
 
@@ -13,17 +12,26 @@ const UserContext = createContext();
 function App() {
   const { user, isAuthenticated } = useAuth0();
   const [clients, setClients] = useState([]);
+  const [isChat, setIsChat] = useState(false);
+
   return (
     <UserContext.Provider
-      value={{ clients, setClients, user, isAuthenticated, socket }}
+      value={{
+        clients,
+        setClients,
+        user,
+        isAuthenticated,
+        socket,
+        isChat,
+        setIsChat,
+      }}
     >
-      <div className="h-screen w-screen overflow-scroll ">
-        <LoginButton></LoginButton>
-        <Globe></Globe>
-        <Chat></Chat>
+      <div className="h-screen w-screen overflow-hidden">
+        <Header />
+        <Globe />
       </div>
     </UserContext.Provider>
   );
 }
-// export default App;
+
 export { App, UserContext };

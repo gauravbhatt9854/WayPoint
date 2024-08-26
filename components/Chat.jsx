@@ -1,48 +1,64 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { UserContext } from "../src/App";
 
 const Chat = () => {
   const { user, socket, isAuthenticated } = useContext(UserContext);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
+    // Listen for new chat messages from the server
     socket.on("newChatMessage", (data) => {
-      console.log("getting");
       setMessages((prevMessages) => [...prevMessages, data]);
     });
 
+    // Cleanup the event listener when the component unmounts
     return () => {
       socket.off("newChatMessage");
     };
   }, [socket]);
 
+  // Scroll to the bottom when a new message is added
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const sendMessage = (e) => {
     e.preventDefault();
     if (message.trim()) {
-      socket.emit("chatMessage", message);
+      // Emit the message to the server
+      socket.emit("chatMessage", {
+        username: user?.name || "Anonymous",
+        message: message,
+        profileUrl: user?.picture || "",
+        timestamp: new Date(),
+      });
+
+      // Add the message locally for instant feedback
       setMessages((prevMessages) => [
         ...prevMessages,
         {
           username: "You",
           message: message,
-          profileUrl: "",
+          profileUrl: user?.picture || "",
           timestamp: new Date(),
         },
       ]);
-      setMessage("");
+      setMessage(""); // Clear the input field
     }
   };
 
   return (
-    <div className="flex flex-col h-screen justify-center items-center bg-gray-100 bor border-rose-600 border-4 overflow-scroll">
+    <div className="fixed bottom-4 right-4 w-80 h-96 bg-white shadow-lg rounded-lg border border-gray-300 flex flex-col z-50">
       {isAuthenticated ? (
-        <div className="w-full max-w-lg p-4 bg-white shadow-lg rounded-lg flex flex-col">
-          <div className="flex-1 overflow-y-auto mb-4">
+        <div className="flex flex-col h-full">
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg, index) => (
               <div
                 key={index}
-                className={`flex items-start mb-4 ${
+                className={`flex items-start mb-2 ${
                   msg.username === "You" ? "justify-end" : "justify-start"
                 }`}
               >
@@ -50,12 +66,12 @@ const Chat = () => {
                   <img
                     src={msg.profileUrl || "https://via.placeholder.com/40"}
                     alt={msg.username}
-                    className="w-10 h-10 rounded-full mr-3"
+                    className="w-8 h-8 rounded-full mr-2"
                   />
                 )}
                 <div>
                   <div
-                    className={`p-3 rounded-lg ${
+                    className={`p-2 rounded-lg max-w-xs break-words ${
                       msg.username === "You"
                         ? "bg-blue-500 text-white"
                         : "bg-gray-200 text-gray-800"
@@ -70,8 +86,13 @@ const Chat = () => {
                 </div>
               </div>
             ))}
+            <div ref={messagesEndRef}></div>
           </div>
-          <form onSubmit={sendMessage} className="flex">
+          {/* Input Field and Send Button */}
+          <form
+            onSubmit={sendMessage}
+            className="flex p-2 border-t border-gray-300"
+          >
             <input
               type="text"
               value={message}
@@ -88,8 +109,8 @@ const Chat = () => {
           </form>
         </div>
       ) : (
-        <div>
-          <h1>login first</h1>
+        <div className="flex items-center justify-center h-full">
+          <h1 className="text-gray-500">Please log in to chat</h1>
         </div>
       )}
     </div>
