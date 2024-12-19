@@ -43,7 +43,7 @@ const Globe = () => {
       setClients(data);
     });
 
-    socket.on("new-user", (soc) => {});
+    socket.on("new-user", (soc) => { });
 
     return () => {
       clearInterval(interval);
@@ -74,49 +74,45 @@ const Globe = () => {
   };
 
   return (
-    <div className="relative h-[85%] w-full">
+    <div className="h-[100%] lg:h-[85%] lg:w-[100%] flex flex-col lg:flex-row p-10 gap-5  justify-center items-center lg:overflow-hidden overflow-scroll">
       {isAuthenticated ? (
         <>
-          <div className="overflow-hidden h-full">
-            <MapContainer
-              center={userLocation}
-              zoom={6}
-              scrollWheelZoom={false}
-              className="absolute inset-0 h-full w-full z-0"
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={userLocation} icon={userIcon}>
-                <Popup>{user.name}</Popup>
+          <MapContainer
+            center={userLocation}
+            zoom={6}
+            scrollWheelZoom={false}
+            // className="absolute inset-0 h-full w-full z-2"
+            style={{
+              height: window.innerWidth < 1024 ? '50%' : '85%',
+              width: window.innerWidth < 1024 ? '100%' : '50%',
+              padding: window.innerWidth < 1024 ? '20px' : '50px', // Adjust padding if needed
+              border: '4px solid #1E3A8A',
+              overflow: window.innerWidth < 1024 ? 'auto' : 'hidden'  // Scroll on smaller screens and hide overflow on large
+            }}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={userLocation} icon={userIcon}>
+              <Popup>{user.name}</Popup>
+            </Marker>
+            {clients.map(({ id, l1, l2, username, profileUrl }) => (
+              <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
+                <Popup>{username} is here on the map</Popup>
               </Marker>
-              {clients.map(({ id, l1, l2, username, profileUrl }) => (
-                <Marker
-                  key={id}
-                  position={[l1, l2]}
-                  icon={getClientIcon(profileUrl)}
-                >
-                  <Popup>{username} is here on the map</Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </div>
-          {/* Chat Component */}
-          {isChat && (
-            <div className="fixed bottom-4 right-4 w-80 h-80 bg-white shadow-lg rounded-lg overflow-hidden z-50">
-              <Chat />
-            </div>
-          )}
+            ))}
+          </MapContainer>
+          <Chat />
         </>
-      ) : (
-        <div>
-          <h3 className="text-2xl  font-mono">
-            Use your Google account to login
-          </h3>
-        </div>
-      )}
+      ) :
+        (
+          <div>
+            <h3 className="text-2xl font-mono">Use your Google account to login</h3>
+          </div>
+        )}
     </div>
+
   );
 };
 
