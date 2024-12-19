@@ -15,7 +15,7 @@ const Globe = () => {
   } = useContext(UserContext);
 
   const [userLocation, setUserLocation] = useState([23, 79]);
-  console.log(isMap)
+
 
   const userIcon = new L.Icon({
     iconUrl: user?.picture || "fallback-image-url",

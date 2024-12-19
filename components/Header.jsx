@@ -24,8 +24,8 @@ const Header = () => {
         >
           {isChat ? "Hide Chat" : "Show Chat"}
         </button>
-{/* 
-        <button
+
+        {/* <button
           onClick={() => setIsMap((prev) => !prev)} // Correct usage with prev
           className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md transition-all text-sm"
         >
