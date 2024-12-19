@@ -12,7 +12,8 @@ const UserContext = createContext();
 function App() {
   const { user, isAuthenticated  , loginWithRedirect} = useAuth0();
   const [clients, setClients] = useState([]);
-  const [isChat, setIsChat] = useState(false);
+  const [isChat, setIsChat] = useState(true);
+  const [isMap, setIsMap] = useState(true);
 
   return (
     <UserContext.Provider
@@ -20,10 +21,11 @@ function App() {
         clients,
         setClients,
         user,
-        isAuthenticated,
         socket,
         isChat,
         setIsChat,
+        isMap, 
+        setIsMap
       }}
     >
       <div className="h-screen w-screen overflow-hidden">

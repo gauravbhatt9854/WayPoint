@@ -10,13 +10,12 @@ const Globe = () => {
     clients,
     setClients,
     user,
-    isAuthenticated,
     socket,
-    isChat,
-    setIsChat,
+    isMap,
   } = useContext(UserContext);
 
   const [userLocation, setUserLocation] = useState([23, 79]);
+  console.log(isMap)
 
   const userIcon = new L.Icon({
     iconUrl: user?.picture || "fallback-image-url",
@@ -75,36 +74,34 @@ const Globe = () => {
 
   return (
     <div className="pl-2 md:pl-10 lg:pl-0 h-[85%]  w-full flex flex-col lg:flex-row gap-5 justify-center lg:p-5 items-center overflow-hidden">
+      <MapContainer
+        center={userLocation}
+        zoom={6}
+        scrollWheelZoom={false}
+        style={{
+          height: window.innerWidth < 1024 ? '50%' : '85%',
+          width: window.innerWidth < 1024 ? '85%' : '50%',
+        }}
+        // className={`shadow-lg rounded-lg border-gray-300 ${isMap ? 'block' : 'hidden'}`}
+        // className={`${isMap ? 'block' : 'hidden'} shadow-lg rounded-lg border-gray-300`}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
-      <>
-        <MapContainer
-          center={userLocation}
-          zoom={6}
-          scrollWheelZoom={false}
-          // className="absolute inset-0 h-full w-full z-2"
-          style={{
-            height: window.innerWidth < 1024 ? '50%' : '85%',
-            width: window.innerWidth < 1024 ? '85%' : '50%',
-            // padding: window.innerWidth < 1024 ? '20px' : '50px', // Adjust padding if needed
-            overflow: window.innerWidth < 1024 ? 'auto' : 'hidden'  // Scroll on smaller screens and hide overflow on large
-          }}
-          className="shadow-lg rounded-lg border-gray-300"
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <Marker position={userLocation} icon={userIcon}>
-            <Popup>{user.name}</Popup>
+        <Marker position={userLocation} icon={userIcon}>
+          <Popup>{user.name}</Popup>
+        </Marker>
+
+        {clients.map(({ id, l1, l2, username, profileUrl }) => (
+          <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
+            <Popup>{username} is here on the map</Popup>
           </Marker>
-          {clients.map(({ id, l1, l2, username, profileUrl }) => (
-            <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
-              <Popup>{username} is here on the map</Popup>
-            </Marker>
-          ))}
-        </MapContainer>
-        <Chat />
-      </>
+        ))}
+      </MapContainer>
+
+      <Chat />
     </div>
 
   );

@@ -2,11 +2,10 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { UserContext } from "../src/App";
 
 const Chat = () => {
-  const { user, socket, isAuthenticated , isChat } = useContext(UserContext);
+  const { user , socket , isChat, setIsChat } = useContext(UserContext);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
-
   useEffect(() => {
     const handleNewChatMessage = (data) => {
       setMessages((prevMessages) => [...prevMessages, data.message]);
@@ -47,7 +46,7 @@ const Chat = () => {
   };
 
   return (
-    <div className={`h-[50%] w-[85%] lg:h-[85%] lg:w-[50%] bg-white shadow-lg rounded-lg border border-gray-300 lg:flex lg:flex-col ${!isChat ? 'block' : 'hidden'}`}>
+    <div className={`h-[50%] w-[85%] lg:h-[85%] lg:w-[50%] bg-white shadow-lg rounded-lg border border-gray-300 ${isChat ? 'block' : 'hidden'}`}>
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Messages list */}
