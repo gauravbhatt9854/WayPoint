@@ -10,7 +10,7 @@ const socket = io(SERVER_URL);
 const UserContext = createContext();
 
 function App() {
-  const { user, isAuthenticated } = useAuth0();
+  const { user, isAuthenticated  , loginWithRedirect} = useAuth0();
   const [clients, setClients] = useState([]);
   const [isChat, setIsChat] = useState(false);
 
@@ -26,9 +26,23 @@ function App() {
         setIsChat,
       }}
     >
-      <div className="h-screen w-screen">
+      <div className="h-screen w-screen overflow-hidden">
+      {isAuthenticated ? (
+        <>
         <Header />
         <Globe />
+        </>
+      ) :
+        (
+          <div className="flex justify-end">
+          <button
+            onClick={() => loginWithRedirect()}
+            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-all"
+          >
+            Log In
+          </button>
+        </div>
+        )}
       </div>
     </UserContext.Provider>
   );

@@ -74,43 +74,37 @@ const Globe = () => {
   };
 
   return (
-    <div className="h-[100%] lg:h-[85%] lg:w-[100%] flex flex-col lg:flex-row p-10 gap-5  justify-center items-center lg:overflow-hidden overflow-scroll">
-      {isAuthenticated ? (
-        <>
-          <MapContainer
-            center={userLocation}
-            zoom={6}
-            scrollWheelZoom={false}
-            // className="absolute inset-0 h-full w-full z-2"
-            style={{
-              height: window.innerWidth < 1024 ? '50%' : '85%',
-              width: window.innerWidth < 1024 ? '100%' : '50%',
-              padding: window.innerWidth < 1024 ? '20px' : '50px', // Adjust padding if needed
-              border: '4px solid #1E3A8A',
-              overflow: window.innerWidth < 1024 ? 'auto' : 'hidden'  // Scroll on smaller screens and hide overflow on large
-            }}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker position={userLocation} icon={userIcon}>
-              <Popup>{user.name}</Popup>
+    <div className="pl-4 md:pl-10 lg:pl-0 h-[75%] lg:h-[85%] w-[95%] lg:w-[100%] flex flex-col lg:flex-row gap-5 justify-center lg:p-5 items-center overflow-scroll lg:overflow-hidden">
+
+      <>
+        <MapContainer
+          center={userLocation}
+          zoom={6}
+          scrollWheelZoom={false}
+          // className="absolute inset-0 h-full w-full z-2"
+          style={{
+            height: window.innerWidth < 1024 ? '50%' : '85%',
+            width: window.innerWidth < 1024 ? '100%' : '50%',
+            // padding: window.innerWidth < 1024 ? '20px' : '50px', // Adjust padding if needed
+            overflow: window.innerWidth < 1024 ? 'auto' : 'hidden'  // Scroll on smaller screens and hide overflow on large
+          }}
+          className="shadow-lg rounded-lg border-gray-300"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <Marker position={userLocation} icon={userIcon}>
+            <Popup>{user.name}</Popup>
+          </Marker>
+          {clients.map(({ id, l1, l2, username, profileUrl }) => (
+            <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
+              <Popup>{username} is here on the map</Popup>
             </Marker>
-            {clients.map(({ id, l1, l2, username, profileUrl }) => (
-              <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
-                <Popup>{username} is here on the map</Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-          <Chat />
-        </>
-      ) :
-        (
-          <div>
-            <h3 className="text-2xl font-mono">Use your Google account to login</h3>
-          </div>
-        )}
+          ))}
+        </MapContainer>
+        <Chat />
+      </>
     </div>
 
   );
