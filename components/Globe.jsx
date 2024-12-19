@@ -74,7 +74,7 @@ const Globe = () => {
   };
 
   return (
-    <div className="pl-4 md:pl-10 lg:pl-0 h-[75%] lg:h-[85%] w-[95%] lg:w-[100%] flex flex-col lg:flex-row gap-5 justify-center lg:p-5 items-center overflow-scroll lg:overflow-hidden">
+    <div className="pl-2 md:pl-10 lg:pl-0 h-[85%]  w-full flex flex-col lg:flex-row gap-5 justify-center lg:p-5 items-center overflow-hidden">
 
       <>
         <MapContainer
@@ -84,7 +84,7 @@ const Globe = () => {
           // className="absolute inset-0 h-full w-full z-2"
           style={{
             height: window.innerWidth < 1024 ? '50%' : '85%',
-            width: window.innerWidth < 1024 ? '100%' : '50%',
+            width: window.innerWidth < 1024 ? '85%' : '50%',
             // padding: window.innerWidth < 1024 ? '20px' : '50px', // Adjust padding if needed
             overflow: window.innerWidth < 1024 ? 'auto' : 'hidden'  // Scroll on smaller screens and hide overflow on large
           }}

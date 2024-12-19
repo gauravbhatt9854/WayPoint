@@ -9,7 +9,7 @@ const Header = () => {
     useAuth0();
 
   return (
-    <div className="h-[25] w-full lg:h-[15%] bg-gray-800 text-white p-4 shadow-lg">
+    <div className="h-[15%] w-full bg-gray-800 text-white p-4 shadow-lg mb-5 lg:mb-0">
         <div className="flex justify-between items-center">
           {/* Left part */}
           <div className="flex items-center gap-4">
