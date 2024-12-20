@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import { useState, createContext, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import io from "socket.io-client";
+import { LoginPage } from "../components/LoginPage";
 
 const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
 const socket = io(SERVER_URL);
@@ -46,14 +47,7 @@ function App() {
         </>
       ) :
         (
-          <div className="flex justify-end">
-          <button
-            onClick={() => loginWithRedirect()}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-all"
-          >
-            Log In
-          </button>
-        </div>
+          <LoginPage></LoginPage>
         )}
       </div>
     </UserContext.Provider>
