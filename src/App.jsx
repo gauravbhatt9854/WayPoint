@@ -1,7 +1,7 @@
 import "./App.css";
 import Globe from "../components/Globe";
 import Header from "../components/Header";
-import { useState, createContext } from "react";
+import { useState, createContext, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import io from "socket.io-client";
 
@@ -14,6 +14,15 @@ function App() {
   const [clients, setClients] = useState([]);
   const [isChat, setIsChat] = useState(true);
   const [isMap, setIsMap] = useState(true);
+  const[server , setServer] = useState("");
+
+  useEffect(()=>
+  {
+    socket.on("setCookie", (data) => {
+      console.log("server updated");
+      setServer(data.value)
+    })
+  },[socket])
 
   return (
     <UserContext.Provider
@@ -25,7 +34,8 @@ function App() {
         isChat,
         setIsChat,
         isMap, 
-        setIsMap
+        setIsMap,
+        server,
       }}
     >
       <div className="h-screen w-screen overflow-hidden">

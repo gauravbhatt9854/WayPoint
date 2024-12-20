@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { UserContext } from "../src/App";
 import Chat from "./Chat";
-
+import { Contribute } from "./Contibute";
 const Globe = () => {
   const {
     clients,
@@ -12,9 +12,19 @@ const Globe = () => {
     user,
     socket,
     isMap,
+    isChat,
   } = useContext(UserContext);
 
   const [userLocation, setUserLocation] = useState([23, 79]);
+
+    const [showContribute, setShowContribute] = useState(false);
+    useEffect(() => {
+      if (!isMap && !isChat) {
+        setShowContribute(true); // Show Contribute page if both are hidden
+      } else {
+        setShowContribute(false);// Hide Contribute page if any of them are visible
+      }
+    }, [isMap, isChat]);
 
 
   const userIcon = new L.Icon({
@@ -74,16 +84,16 @@ const Globe = () => {
 
   return (
     <div className="pl-2 md:pl-10 pt-5 lg:pt-0 h-[85%] lg:h-[85%] w-full flex flex-col lg:flex-row gap-5 justify-center lg:p-5 items-center overflow-hidden">
+      <div className={`${isMap ? 'block' : 'hidden'} h-[50%] lg:h-[85%] w-[85%] lg:w-[50%]`}>
       <MapContainer
         center={userLocation}
         zoom={6}
         scrollWheelZoom={false}
         style={{
-          height: window.innerWidth < 1024 ? '50%' : '85%',
-          width: window.innerWidth < 1024 ? '85%' : '50%',
+          height: window.innerWidth < 1024 ? '100%' : '100%',
+          width: window.innerWidth < 1024 ? '100%' : '100%',
         }}
-        // className={`shadow-lg rounded-lg border-gray-300 ${isMap ? 'block' : 'hidden'}`}
-        // className={`${isMap ? 'block' : 'hidden'} shadow-lg rounded-lg border-gray-300`}
+        
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -100,8 +110,10 @@ const Globe = () => {
           </Marker>
         ))}
       </MapContainer>
+      </div>
 
       <Chat />
+      {showContribute && <Contribute />}
     </div>
 
   );

@@ -4,7 +4,7 @@ import Client1 from "./Client1";
 import { UserContext } from "../src/App";
 
 const Header = () => {
-  const { isChat, setIsChat, isMap, setIsMap } = useContext(UserContext);
+  const { isChat, setIsChat, isMap, setIsMap , server } = useContext(UserContext);
   const { user, isAuthenticated, isLoading, loginWithRedirect, logout } =
     useAuth0();
 
@@ -25,12 +25,19 @@ const Header = () => {
           {isChat ? "Hide Chat" : "Show Chat"}
         </button>
 
-        {/* <button
+        <button
           onClick={() => setIsMap((prev) => !prev)} // Correct usage with prev
           className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md transition-all text-sm"
         >
           {isMap ? "Hide Map" : "Show Map"}
-        </button> */}
+        </button>
+
+        <button
+          className={`${server.length > 0 ? 'bg-green-700' : 'bg-yellow-700'} text-white py-1 px-3 rounded-md transition-all text-sm disabled`}
+
+        >
+          {server.length === 0 ? 'NO SERVER CONNECTED' : server}
+        </button>
 
         <button
           onClick={logout}

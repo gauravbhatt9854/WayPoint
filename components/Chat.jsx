@@ -2,10 +2,11 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { UserContext } from "../src/App";
 
 const Chat = () => {
-  const { user , socket , isChat, setIsChat } = useContext(UserContext);
+  const { user , socket , isChat } = useContext(UserContext);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
+
   useEffect(() => {
     const handleNewChatMessage = (data) => {
       setMessages((prevMessages) => [...prevMessages, data.message]);
@@ -17,6 +18,7 @@ const Chat = () => {
       socket.off("newChatMessage", handleNewChatMessage);
     };
   }, [socket]);
+  
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
