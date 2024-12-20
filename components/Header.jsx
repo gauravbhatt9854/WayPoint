@@ -9,7 +9,7 @@ const Header = () => {
     useAuth0();
 
   return (
-    <div className="h-[15%] w-full bg-gray-800 text-white p-4 shadow-lg mb-5 lg:mb-0 flex justify-between items-center ">
+    <div className="lg:h-[15%] w-full h-[10%] bg-gray-800 text-white p-4 shadow-lg lg:mb-0 flex lg:justify-between items-center">
       <div className="flex items-center gap-4">
         <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-green-400">
           <img src={user.picture} alt="profile" />
@@ -20,7 +20,7 @@ const Header = () => {
       <div className="btns flex gap-4">
         <button
           onClick={() => setIsChat((prev) => !prev)} // Correct usage with prev
-          className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md transition-all text-sm"
+          className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md transition-all text-sm h-[60%]"
         >
           {isChat ? "Hide Chat" : "Show Chat"}
         </button>
@@ -34,7 +34,7 @@ const Header = () => {
 
         <button
           onClick={logout}
-          className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-md transition-all text-sm"
+          className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-md transition-all text-sm h-[60%]"
         >
           Log Out
         </button>

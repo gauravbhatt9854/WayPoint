@@ -73,7 +73,7 @@ const Globe = () => {
   };
 
   return (
-    <div className="pl-2 md:pl-10 lg:pl-0 h-[85%]  w-full flex flex-col lg:flex-row gap-5 justify-center lg:p-5 items-center overflow-hidden">
+    <div className="pl-2 md:pl-10 pt-5 lg:pt-0 h-[85%] lg:h-[85%] w-full flex flex-col lg:flex-row gap-5 justify-center lg:p-5 items-center overflow-hidden">
       <MapContainer
         center={userLocation}
         zoom={6}
