@@ -1,5 +1,3 @@
-DEPLOYED --: https://way-f.golubhattuk01.pro/
+DEPLOYED --: https://way.golu.codes/
 
-![alt text](<public/images/Screenshot 2024-08-28 181044.png>)
-
-![alt text](<public/images/Screenshot 2024-08-28 181347.png>)
+![Screenshot (18)](https://github.com/user-attachments/assets/f6c02202-10aa-4799-8444-dccdb075ca98)
