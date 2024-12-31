@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
-import { UserContext } from "../src/App";
+import { SocketContext } from "../providers/SocketProvider";
 
 const Chat = () => {
-  const { user , socket , isChat } = useContext(UserContext);
+  const { user , socket , isChat } = useContext(SocketContext);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);

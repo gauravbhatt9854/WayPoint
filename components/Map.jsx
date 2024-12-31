@@ -2,10 +2,11 @@ import React, { useState, useEffect, useContext } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { UserContext } from "../src/App";
-import Chat from "./Chat";
-import { Contribute } from "./Contibute";
-const Globe = () => {
+import { SocketContext } from "../providers/SocketProvider";
+import { MapContext, MapProvider } from "../providers/MapProvider";
+
+
+const Map = () => {
   const {
     clients,
     setClients,
@@ -13,19 +14,11 @@ const Globe = () => {
     socket,
     isMap,
     isChat,
-  } = useContext(UserContext);
+  } = useContext(SocketContext);
+
+  const { list, currMap, setCurrMap } = useContext(MapContext);
 
   const [userLocation, setUserLocation] = useState([23, 79]);
-
-    const [showContribute, setShowContribute] = useState(false);
-    useEffect(() => {
-      if (!isMap && !isChat) {
-        setShowContribute(true); // Show Contribute page if both are hidden
-      } else {
-        setShowContribute(false);// Hide Contribute page if any of them are visible
-      }
-    }, [isMap, isChat]);
-
 
   const userIcon = new L.Icon({
     iconUrl: user?.picture || "fallback-image-url",
@@ -83,40 +76,39 @@ const Globe = () => {
   };
 
   return (
-    <div className="pl-2 md:pl-10 pt-5 lg:pt-0 h-[85%] lg:h-[85%] w-full flex flex-col lg:flex-row gap-5 justify-center lg:p-5 items-center overflow-hidden">
       <div className={`${isMap ? 'block' : 'hidden'} h-[50%] lg:h-[85%] w-[85%] lg:w-[50%]`}>
-      <MapContainer
-        center={userLocation}
-        zoom={6}
-        scrollWheelZoom={false}
-        style={{
-          height: window.innerWidth < 1024 ? '100%' : '100%',
-          width: window.innerWidth < 1024 ? '100%' : '100%',
-        }}
         
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <MapContainer
+          center={userLocation}
+          zoom={15}
+          scrollWheelZoom={false}
+          style={{
+            height: window.innerWidth < 1024 ? '100%' : '100%',
+            width: window.innerWidth < 1024 ? '100%' : '100%',
+          }}
+        >
+          <TileLayer
+            // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 
-        <Marker position={userLocation} icon={userIcon}>
-          <Popup>{user.name}</Popup>
-        </Marker>
+            attribution={list[currMap].attribution}
 
-        {clients.map(({ id, l1, l2, username, profileUrl }) => (
-          <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
-            <Popup>{username} is here on the map</Popup>
+            url={list[currMap].url}
+          />
+
+          <Marker position={userLocation} icon={userIcon}>
+            <Popup>{user.name}</Popup>
           </Marker>
-        ))}
-      </MapContainer>
+
+          {clients.map(({ id, l1, l2, username, profileUrl }) => (
+            <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
+              <Popup>{username} is here on the map</Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+
       </div>
-
-      <Chat />
-      {showContribute && <Contribute />}
-    </div>
-
   );
 };
 
-export default Globe;
+export default Map;

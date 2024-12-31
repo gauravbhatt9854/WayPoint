@@ -1,57 +1,29 @@
 import "./App.css";
-import Globe from "../components/Globe";
 import Header from "../components/Header";
-import { useState, createContext, useEffect } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
-import io from "socket.io-client";
 import { LoginPage } from "../components/LoginPage";
+import Home from "../components/Home";
+import { SocketProvider, SocketContext } from "../providers/SocketProvider";
+import { useAuth0 } from "@auth0/auth0-react";
+import { MapProvider } from "../providers/MapProvider";
 
-const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
-const socket = io(SERVER_URL);
-const UserContext = createContext();
 
 function App() {
-  const { user, isAuthenticated  , loginWithRedirect} = useAuth0();
-  const [clients, setClients] = useState([]);
-  const [isChat, setIsChat] = useState(true);
-  const [isMap, setIsMap] = useState(true);
-  const[server , setServer] = useState("");
-
-  useEffect(()=>
-  {
-    socket.on("setCookie", (data) => {
-      console.log("server updated");
-      setServer(data.value)
-    })
-  },[socket])
+  const { isAuthenticated } = useAuth0();
 
   return (
-    <UserContext.Provider
-      value={{
-        clients,
-        setClients,
-        user,
-        socket,
-        isChat,
-        setIsChat,
-        isMap, 
-        setIsMap,
-        server,
-      }}
-    >
-      <div className="h-screen w-screen overflow-hidden">
+    <div className="h-screen w-screen overflow-hidden">
       {isAuthenticated ? (
-        <>
-        <Header />
-        <Globe />
-        </>
+        <MapProvider>
+          <Header />
+          <Home />
+        </MapProvider>
       ) :
         (
           <LoginPage></LoginPage>
         )}
-      </div>
-    </UserContext.Provider>
+    </div>
+
   );
 }
 
-export { App, UserContext };
+export { App };

@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
-import { UserContext } from "../src/App";
+import { SocketContext } from "../providers/SocketProvider";
 
 export const Client1 = () => {
-  const { clients } = useContext(UserContext);
+  const { clients } = useContext(SocketContext);
   return (
-    <div className=" bg-white p-4 rounded-lg shadow-lg overflow-y-scroll max-h-[100%] max-w-[20%] overflow-x-hidden hidden lg:block">
+    <div className=" bg-white p-4 rounded-lg shadow-lg overflow-y-scroll max-h-[100%] max-w-[20%] overflow-x-hidden  lg:block">
       <div className="overflow-y-auto max-h-60">
 
         {clients.map((item, index) => (
