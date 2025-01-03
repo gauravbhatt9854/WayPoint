@@ -1,32 +1,47 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext, useRef, useMemo } from "react";
 import { SocketContext } from "../providers/SocketProvider";
 
 const Chat = () => {
-  const { user , socket , isChat } = useContext(SocketContext);
+  const { user, socket, isChat } = useContext(SocketContext);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
+  // Memoize the socket listener to avoid unnecessary re-bindings
+  const socketListeners = useMemo(() => {
     const handleNewChatMessage = (data) => {
-      setMessages((prevMessages) => [...prevMessages, data.message]);
+      console.log("Received new message: ", data.message);
+      setMessages((prev) => [...prev, data.message]);
     };
 
-    socket.on("newChatMessage", handleNewChatMessage);
+    return { handleNewChatMessage };
+  }, []);
 
-    return () => {
-      socket.off("newChatMessage", handleNewChatMessage);
-    };
-  }, [socket]);
-  
+  useEffect(() => {
+    if (socket && socket.connected) {
+      console.log("Socket connected. Listening for messages...");
 
+      // Listen for incoming chat messages
+      socket.on("newChatMessage", socketListeners.handleNewChatMessage);
+
+      // Cleanup to avoid multiple listeners
+      return () => {
+        socket.off("newChatMessage", socketListeners.handleNewChatMessage);
+      };
+    } else {
+      console.warn("Socket not connected. Waiting for reconnection...");
+    }
+  }, [socket, socketListeners]);
+
+  // Scroll to the latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Emit message to server
   const sendMessage = (e) => {
     e.preventDefault();
-    if (message.trim()) {
+    if (message.trim() && socket) {
       socket.emit("chatMessage", {
         username: user?.name || "Anonymous",
         message: message,
@@ -34,8 +49,9 @@ const Chat = () => {
         timestamp: new Date(),
       });
 
-      setMessages((prevMessages) => [
-        ...prevMessages,
+      // Add sent message to local state
+      setMessages((prev) => [
+        ...prev,
         {
           username: "You",
           message: message,
@@ -43,7 +59,7 @@ const Chat = () => {
           timestamp: new Date(),
         },
       ]);
-      setMessage(""); // Clear the input field
+      setMessage("");  // Clear input after sending
     }
   };
 
@@ -51,10 +67,11 @@ const Chat = () => {
     <div className={`h-[50%] w-[85%] lg:h-[85%] lg:w-[50%] bg-white shadow-lg rounded-lg border border-gray-300 ${isChat ? 'block' : 'hidden'}`}>
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        <div className={`${messages.length === 0 ? 'block' : 'hidden'} text-center text-gray-500 font-bold`}>
-          START A CONVERSATION
-        </div>
-          {/* Messages list */}
+          <div className={`${messages.length === 0 ? 'block' : 'hidden'} text-center text-gray-500 font-bold`}>
+            START A CONVERSATION
+          </div>
+          
+          {/* Messages List */}
           {messages.map((msg, index) => (
             <div
               key={index}
@@ -82,6 +99,8 @@ const Chat = () => {
           ))}
           <div ref={messagesEndRef}></div>
         </div>
+
+        {/* Message Input Form */}
         <form onSubmit={sendMessage} className="flex p-2 border-t border-gray-300">
           <input
             type="text"

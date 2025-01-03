@@ -1,13 +1,14 @@
-import { React ,useState, createContext, useEffect} from "react";
+import { React, useState, createContext, useEffect, useMemo } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import io from "socket.io-client";
 
 const SocketContext = createContext();
 
 const SocketProvider = (props) => {
-    
     const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
-    const socket = io(SERVER_URL);
+
+    // Use useMemo to memoize the socket instance
+    const socket = useMemo(() => io(SERVER_URL), [SERVER_URL]);
 
     const { user, isAuthenticated, loginWithRedirect } = useAuth0();
     const [clients, setClients] = useState([]);
@@ -18,9 +19,14 @@ const SocketProvider = (props) => {
     useEffect(() => {
         socket.on("setCookie", (data) => {
             console.log("server updated");
-            setServer(data.value)
-        })
-    }, [socket])
+            setServer(data.value);
+        });
+
+        // Cleanup on unmount
+        return () => {
+            socket.off("setCookie");
+        };
+    }, [socket]);
 
     return (
         <SocketContext.Provider
@@ -39,7 +45,7 @@ const SocketProvider = (props) => {
             }}>
             {props.children}
         </SocketContext.Provider>
-    )
-}
+    );
+};
 
-export { SocketProvider, SocketContext }
+export { SocketProvider, SocketContext };
