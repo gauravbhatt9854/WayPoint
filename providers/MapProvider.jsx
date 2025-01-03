@@ -2,7 +2,7 @@ import React, { createContext  , useState} from 'react'
 const MapContext = createContext();
 const MapProvider = (props) => {
 
-    const [currMap , setCurrMap] = useState(1);
+    const [currMap , setCurrMap] = useState(2);
 
     const list = [
         {

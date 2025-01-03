@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { SocketContext } from "../providers/SocketProvider";
-import { MapContext, MapProvider } from "../providers/MapProvider";
-
+import { MapContext } from "../providers/MapProvider";
 
 const Map = () => {
   const {
@@ -13,15 +12,14 @@ const Map = () => {
     user,
     socket,
     isMap,
-    isChat,
   } = useContext(SocketContext);
 
-  const { list, currMap, setCurrMap } = useContext(MapContext);
+  const { list, currMap } = useContext(MapContext);
 
   const [userLocation, setUserLocation] = useState([23, 79]);
 
   const userIcon = new L.Icon({
-    iconUrl: user?.picture || "fallback-image-url",
+    iconUrl: user?.picture || import.meta.emv.VITE_SAMPLE_LOGO,
     iconSize: [40, 40],
     iconAnchor: [20, 40],
     popupAnchor: [0, -40],
@@ -29,7 +27,7 @@ const Map = () => {
 
   const getClientIcon = (profileUrl) => {
     return new L.Icon({
-      iconUrl: profileUrl || "fallback-image-url",
+      iconUrl: profileUrl || import.meta.env.VITE_RANDOM_LOGO,
       iconSize: [40, 40],
       iconAnchor: [20, 40],
       popupAnchor: [0, -40],
@@ -45,12 +43,9 @@ const Map = () => {
       setClients(data);
     });
 
-    socket.on("new-user", (soc) => { });
-
     return () => {
       clearInterval(interval);
       socket.off("allLocations");
-      socket.off("new-user");
     };
   }, [user]);
 
@@ -68,46 +63,47 @@ const Map = () => {
 
         setUserLocation([latitude, longitude]);
       });
-    } else {
-      console.error(
-        "Geolocation is not supported by this browser or user data is not ready."
-      );
     }
   };
 
+  const RecenterMap = ({ location }) => {
+    const map = useMap();
+    useEffect(() => {
+      map.setView(location, map.getZoom());
+    }, [location]);
+    return null;
+  };
+
   return (
-      <div className={`${isMap ? 'block' : 'hidden'} h-[50%] lg:h-[85%] w-[85%] lg:w-[50%]`}>
-        
-        <MapContainer
-          center={userLocation}
-          zoom={15}
-          scrollWheelZoom={false}
-          style={{
-            height: window.innerWidth < 1024 ? '100%' : '100%',
-            width: window.innerWidth < 1024 ? '100%' : '100%',
-          }}
-        >
-          <TileLayer
-            // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    <div className={`${isMap ? 'block' : 'hidden'} h-[50%] lg:h-[85%] w-[85%] lg:w-[50%]`}>
+      <MapContainer
+        center={userLocation}
+        zoom={8}
+        scrollWheelZoom={false}
+        style={{
+          height: window.innerWidth < 1024 ? '100%' : '100%',
+          width: window.innerWidth < 1024 ? '100%' : '100%',
+        }}
+      >
+        <TileLayer
+          attribution={list[currMap].attribution}
+          url={list[currMap].url}
+        />
+        <RecenterMap location={userLocation} />
 
-            attribution={list[currMap].attribution}
+        <Marker position={userLocation} icon={userIcon}>
+          <Popup>{user.name}</Popup>
+        </Marker>
 
-            url={list[currMap].url}
-          />
-
-          <Marker position={userLocation} icon={userIcon}>
-            <Popup>{user.name}</Popup>
+        {clients.map(({ id, l1, l2, username, profileUrl }) => (
+          
+          <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
+            <Popup>{username} is here on the map</Popup>
+            {/* {console.log(profileUrl)} */}
           </Marker>
-
-          {clients.map(({ id, l1, l2, username, profileUrl }) => (
-            <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
-              <Popup>{username} is here on the map</Popup>
-            </Marker>
-          ))}
-        </MapContainer>
-
-      </div>
+        ))}
+      </MapContainer>
+    </div>
   );
 };
 
