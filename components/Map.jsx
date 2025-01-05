@@ -54,6 +54,8 @@ const Map = () => {
       navigator.geolocation.getCurrentPosition((position) => {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
+        if(userLocation[0]==latitude && userLocation[1]==longitude) return;
+        
         socket.emit("loc-res", {
           l1: latitude,
           l2: longitude,
