@@ -9,16 +9,17 @@ import Temp from "../components/Temp.jsx";
 
 createRoot(document.getElementById("root")).render(
 
-  <Auth0Provider
-    domain={import.meta.env.VITE_DOMAIN}
-    clientId={import.meta.env.VITE_CLIENT}
-    authorizationParams={{
-      redirect_uri: window.location.origin,
-    }}
-  >
-    <SocketProvider>
-      <App></App>
-      {/* <Temp></Temp> */}
-    </SocketProvider>
-  </Auth0Provider>
+<Auth0Provider
+  domain={import.meta.env.VITE_DOMAIN}
+  clientId={import.meta.env.VITE_CLIENT}
+  authorizationParams={{
+    redirect_uri: window.location.origin,
+  }}
+  cacheLocation="localstorage"  // Use localStorage for persistent session
+>
+  <SocketProvider>
+    <App />
+    {/* <Temp /> */}
+  </SocketProvider>
+</Auth0Provider>
 );
