@@ -8,30 +8,26 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
 
   // Memoize the socket listener to avoid unnecessary re-bindings
-  const socketListeners = useMemo(() => {
     const handleNewChatMessage = (data) => {
       console.log("Received new message: ", data.message);
       setMessages((prev) => [...prev, data.message]);
     };
-
-    return { handleNewChatMessage };
-  }, []);
 
   useEffect(() => {
     if (socket && socket.connected) {
       console.log("Socket connected. Listening for messages...");
 
       // Listen for incoming chat messages
-      socket.on("newChatMessage", socketListeners.handleNewChatMessage);
+      socket.on("newChatMessage", handleNewChatMessage);
 
       // Cleanup to avoid multiple listeners
       return () => {
-        socket.off("newChatMessage", socketListeners.handleNewChatMessage);
+        socket.off("newChatMessage", handleNewChatMessage);
       };
     } else {
       console.warn("Socket not connected. Waiting for reconnection...");
     }
-  }, [socket, socketListeners]);
+  }, [socket]);
 
   // Scroll to the latest message
   useEffect(() => {
