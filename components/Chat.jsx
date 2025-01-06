@@ -7,23 +7,14 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
 
-  useEffect(() => { 
-    console.log("Chat component mounted");
-    console.log("socket", socket);
-    
-  }, [socket]);
-
   useEffect(() => {
 
     const handleNewChatMessage = (data) => {
-      // console.log("Received new message: ", data.message);
       setMessages((prev) => [...prev, data.message]);
     };
 
     if (socket && socket.connected) {
-      console.log("Socket connected. Listening for messages...");
 
-      // Listen for incoming chat messages
       socket.on("newChatMessage", handleNewChatMessage);
 
       // Cleanup to avoid multiple listeners
@@ -33,7 +24,7 @@ const Chat = () => {
     } else {
       console.warn("Socket not connected. Waiting for reconnection...");
     }
-  }, []);
+  }, [messages, socket , user]);
 
   // Scroll to the latest message
   useEffect(() => {
@@ -61,6 +52,7 @@ const Chat = () => {
           timestamp: new Date(),
         },
       ]);
+      console.log("first messag ", message);
       setMessage("");  // Clear input after sending
     }
   };
