@@ -52,7 +52,6 @@ const Chat = () => {
           timestamp: new Date(),
         },
       ]);
-      console.log("first messag ", message);
       setMessage("");  // Clear input after sending
     }
   };
