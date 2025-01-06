@@ -17,16 +17,29 @@ const SocketProvider = (props) => {
     const [server, setServer] = useState("");
 
     useEffect(() => {
+
         socket.on("setCookie", (data) => {
             console.log("server updated");
             setServer(data.value);
         });
 
+        socket.emit("register", {
+            l1: 23,
+            l2: 79,
+            username: user?.name || "name not found",
+            profileUrl: user?.picture || "fallback-image-url",
+          });
+
+          socket.on("allUsers", (data) => {
+            setClients(data);
+          });
+
         // Cleanup on unmount
         return () => {
             socket.off("setCookie");
+            socket.off("allUsers");
         };
-    }, [socket]);
+    }, [user , socket]);
 
     return (
         <SocketContext.Provider

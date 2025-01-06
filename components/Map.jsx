@@ -39,31 +39,31 @@ const Map = () => {
       if (user) loc_share();
     }, 5000);
 
-    socket.on("allLocations", (data) => {
-      setClients(data);
-    });
-
     return () => {
       clearInterval(interval);
-      socket.off("allLocations");
     };
-  }, [user]);
+  }, [socket, user]);
 
   const loc_share = () => {
     if (navigator.geolocation && user) {
       navigator.geolocation.getCurrentPosition((position) => {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
-        if(userLocation[0]==latitude && userLocation[1]==longitude) return;
-        
-        socket.emit("loc-res", {
-          l1: latitude,
-          l2: longitude,
-          username: user.name || "name not found",
-          profileUrl: user.picture || "fallback-image-url",
-        });
 
-        setUserLocation([latitude, longitude]);
+        setUserLocation((prevLocation) => {
+          if (prevLocation[0] === latitude && prevLocation[1] === longitude) {
+            // console.log("Location not changed");
+            return prevLocation;
+          }
+
+          socket.emit("loc-res", {
+            l1: latitude,
+            l2: longitude,
+          });
+
+          // Return the updated location
+          return [latitude, longitude];
+        });
       });
     }
   };
@@ -98,7 +98,7 @@ const Map = () => {
         </Marker>
 
         {clients.map(({ id, l1, l2, username, profileUrl }) => (
-          
+
           <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
             <Popup>{username} is here on the map</Popup>
             {/* {console.log(profileUrl)} */}
