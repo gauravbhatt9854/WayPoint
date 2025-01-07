@@ -13,7 +13,7 @@ const Chat = () => {
       setMessages((prev) => [...prev, data.message]);
     };
 
-    if (socket && socket.connected) {
+    if (socket) {
 
       socket.on("newChatMessage", handleNewChatMessage);
 
