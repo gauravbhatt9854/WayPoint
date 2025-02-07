@@ -10,7 +10,7 @@ const Chat = () => {
   useEffect(() => {
 
     const handleNewChatMessage = (data) => {
-      setMessages((prev) => [...prev, data.message]);
+      setMessages((prev) => [...prev, data]);
     };
 
     if (socket) {
@@ -35,12 +35,7 @@ const Chat = () => {
   const sendMessage = (e) => {
     e.preventDefault();
     if (message.trim() && socket) {
-      socket.emit("chatMessage", {
-        username: user?.name || "Anonymous",
-        message: message,
-        profileUrl: user?.picture || "",
-        timestamp: new Date(),
-      });
+      socket.emit("chatMessage", message);
 
       // Add sent message to local state
       setMessages((prev) => [
