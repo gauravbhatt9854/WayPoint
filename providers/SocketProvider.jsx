@@ -26,6 +26,7 @@ const SocketProvider = (props) => {
 
 socket.on("setCookie", (data) => {
   const { name, value, options } = data;
+   setServer(value); // 💡 This updates UI state
 
   let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
 
