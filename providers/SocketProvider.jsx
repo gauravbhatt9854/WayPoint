@@ -8,7 +8,7 @@ const SocketProvider = (props) => {
 
   const { user, isAuthenticated, loginWithRedirect, isLoading } = useAuth0();
   if (!isAuthenticated) return null;
-  
+
   const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
 
   const [clients, setClients] = useState([]);
@@ -23,32 +23,28 @@ const SocketProvider = (props) => {
   }, [SERVER_URL]);
 
   useEffect(() => {
-    if (!isAuthenticated || !user || isLoading) return;
+    if (!isAuthenticated || !user) return;
 
     socket.connect();
 
-socket.on("setCookie", (data) => {
-  const { name, value, options } = data;
-   setServer(value); // 💡 This updates UI state
+    socket.on("setCookie", (data) => {
+      const { name, value, options } = data;
+      setServer(value); // 💡 This updates UI state
 
-  let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+      let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
 
-  if (options?.maxAge) {
-    const expires = new Date(Date.now() + options.maxAge).toUTCString();
-    cookieString += `; expires=${expires}`;
-  }
+      if (options?.maxAge) {
+        const expires = new Date(Date.now() + options.maxAge).toUTCString();
+        cookieString += `; expires=${expires}`;
+      }
 
-  if (options?.path) {
-    cookieString += `; path=${options.path}`;
-  }
+      if (options?.path) {
+        cookieString += `; path=${options.path}`;
+      }
 
-  // Optional: add Secure or SameSite if needed
-  // cookieString += "; Secure; SameSite=Lax";
+      document.cookie = cookieString;
 
-  document.cookie = cookieString;
-
-  // console.log(`🍪 Cookie set: ${cookieString}`);
-});
+    });
 
     socket.emit("register", {
       l1: 101, // Replace with dynamic values if needed
@@ -66,7 +62,7 @@ socket.on("setCookie", (data) => {
       socket.off("allUsers");
       socket.disconnect();
     };
-  }, [user, isAuthenticated, isLoading, socket]);
+  }, [user, isAuthenticated, socket]);
 
   return (
     <SocketContext.Provider

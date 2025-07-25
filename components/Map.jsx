@@ -8,10 +8,8 @@ import { MapContext } from "../providers/MapProvider";
 const Map = () => {
   const {
     clients,
-    setClients,
     user,
     socket,
-    isMap,
   } = useContext(SocketContext);
 
   const { list, currMap } = useContext(MapContext);
@@ -42,7 +40,7 @@ const Map = () => {
     return () => {
       clearInterval(interval);
     };
-  }, [socket, user]);
+  }, []);
 
   const loc_share = () => {
     if (navigator.geolocation && user) {
@@ -50,20 +48,14 @@ const Map = () => {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
 
-        setUserLocation((prevLocation) => {
-          if (prevLocation[0] === latitude && prevLocation[1] === longitude) {
-            // console.log("Location not changed");
-            return prevLocation;
-          }
-
-          socket.emit("loc-res", {
-            l1: latitude,
-            l2: longitude,
-          });
-
-          // Return the updated location
-          return [latitude, longitude];
+        socket.emit("loc-res", {
+          l1: latitude,
+          l2: longitude,
         });
+
+        if (userLocation[0] !== latitude || userLocation[1] !== longitude) {
+            setUserLocation((pre) => [latitude , longitude]);
+        }
       });
     }
   };
