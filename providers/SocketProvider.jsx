@@ -62,7 +62,6 @@ useEffect(() => {
   }
 
   socket.on("allLocations", (data) => {
-    console.log("data ", data);
     setClients(data);
   });
 
