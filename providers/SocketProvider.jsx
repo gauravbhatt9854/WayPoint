@@ -14,7 +14,7 @@ const SocketProvider = (props) => {
   const [clients, setClients] = useState([]);
   const [isChat, setIsChat] = useState(true);
   const [isMap, setIsMap] = useState(true);
-  const [server, setServer] = useState("");
+  const [server, setServer] = useState("server1");
   const [userLocation, setUserLocation] = useState([23, 79]);
 
   const socket = useMemo(() => {
@@ -27,22 +27,6 @@ useEffect(() => {
   if (!isAuthenticated || !user) return;
 
   socket.connect();
-
-  socket.on("setCookie", (data) => {
-    const { name, value, options } = data;
-    setServer(value);
-
-    let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
-    if (options?.maxAge) {
-      const expires = new Date(Date.now() + options.maxAge).toUTCString();
-      cookieString += `; expires=${expires}`;
-    }
-    if (options?.path) {
-      cookieString += `; path=${options.path}`;
-    }
-
-    document.cookie = cookieString;
-  });
 
   // 🧭 First fetch location, then emit 'register'
   if (navigator.geolocation && user) {
