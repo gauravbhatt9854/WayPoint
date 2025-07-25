@@ -1,13 +1,16 @@
-import React, { useState, createContext, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  createContext,
+  useEffect,
+  useMemo,
+} from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import io from "socket.io-client";
 
 const SocketContext = createContext(null);
 
-const SocketProvider = (props) => {
-
+const SocketProvider = ({ children }) => {
   const { user, isAuthenticated, loginWithRedirect, isLoading } = useAuth0();
-  if (!isAuthenticated) return null;
 
   const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
 
@@ -23,62 +26,78 @@ const SocketProvider = (props) => {
     });
   }, [SERVER_URL]);
 
-useEffect(() => {
-  if (!isAuthenticated || !user) return;
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
 
-  socket.connect();
+    let isMounted = true;
 
-  // 🧭 First fetch location, then emit 'register'
-  if (navigator.geolocation && user) {
-    navigator.geolocation.getCurrentPosition((position) => {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+    if (!socket.connected) {
+      socket.connect();
+    }
 
-      setUserLocation([latitude, longitude]);
-
-      socket.emit("register", {
-        username: user.name || "Anonymous",
-        profileUrl: user.picture || "fallback-image-url",
-        lat: latitude,
-        lng: longitude,
-      });
-    });
-  }
-
-  socket.on("allLocations", (data) => {
-    setClients(data);
-  });
-
-  function shareLocation() {
-    if (navigator.geolocation && user) {
+    // 🧭 First fetch location, then emit 'register'
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
+        if (!isMounted) return;
+
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
 
-        socket.emit("locationUpdate", {
+        setUserLocation([latitude, longitude]);
+
+        socket.emit("register", {
+          username: user.name || "Anonymous",
+          profileUrl: user.picture || "",
           lat: latitude,
           lng: longitude,
         });
-
-        if (userLocation[0] !== latitude || userLocation[1] !== longitude) {
-          setUserLocation([latitude, longitude]);
-        }
       });
     }
-  }
 
-  const interval = setInterval(() => {
-    if (user) shareLocation();
-  }, 5000);
+    // Listen for all clients' locations
+    socket.on("allLocations", (data) => {
+      if (isMounted) {
+        setClients(data);
+      }
+    });
 
-  return () => {
-    socket.off("setCookie");
-    socket.off("allUsers");
-    socket.disconnect();
-    clearInterval(interval);
-  };
-}, [user, isAuthenticated, socket]);
+    // Periodically send location update
+    function shareLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          if (!isMounted) return;
 
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          socket.emit("locationUpdate", {
+            lat: latitude,
+            lng: longitude,
+          });
+
+          if (
+            userLocation[0] !== latitude ||
+            userLocation[1] !== longitude
+          ) {
+            setUserLocation([latitude, longitude]);
+          }
+        });
+      }
+    }
+
+    const interval = setInterval(() => {
+      if (user) {
+        shareLocation();
+      }
+    }, 5000);
+
+    return () => {
+      isMounted = false;
+      socket.off("allLocations");
+      socket.disconnect();
+      clearInterval(interval);
+    };
+  }, [user, isAuthenticated]);
 
   return (
     <SocketContext.Provider
@@ -98,7 +117,7 @@ useEffect(() => {
         setUserLocation,
       }}
     >
-      {props.children}
+      {children}
     </SocketContext.Provider>
   );
 };
