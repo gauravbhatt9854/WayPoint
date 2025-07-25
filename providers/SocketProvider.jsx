@@ -11,6 +11,7 @@ const SocketContext = createContext(null);
 
 const SocketProvider = ({ children }) => {
   const { user, isAuthenticated, loginWithRedirect, isLoading } = useAuth0();
+
   const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
 
   const [clients, setClients] = useState([]);
@@ -18,7 +19,6 @@ const SocketProvider = ({ children }) => {
   const [isMap, setIsMap] = useState(true);
   const [server, setServer] = useState("server1");
   const [userLocation, setUserLocation] = useState([23, 79]);
-  const [locationFetched, setLocationFetched] = useState(false);
 
   const socket = useMemo(() => {
     return io(SERVER_URL, {
@@ -26,7 +26,6 @@ const SocketProvider = ({ children }) => {
     });
   }, [SERVER_URL]);
 
-  // Initial connection and listener setup
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
@@ -36,6 +35,25 @@ const SocketProvider = ({ children }) => {
       socket.connect();
     }
 
+    // 🧭 First fetch location, then emit 'register'
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        if (!isMounted) return;
+
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        setUserLocation([latitude, longitude]);
+
+        socket.emit("register", {
+          username: user.name || "Anonymous",
+          profileUrl: user.picture || "",
+          lat: latitude,
+          lng: longitude,
+        });
+      });
+    }
+
     // Listen for all clients' locations
     socket.on("allLocations", (data) => {
       if (isMounted) {
@@ -43,8 +61,32 @@ const SocketProvider = ({ children }) => {
       }
     });
 
+    // Periodically send location update
+    function shareLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          if (!isMounted) return;
+
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          socket.emit("locationUpdate", {
+            lat: latitude,
+            lng: longitude,
+          });
+
+          if (
+            userLocation[0] !== latitude ||
+            userLocation[1] !== longitude
+          ) {
+            setUserLocation([latitude, longitude]);
+          }
+        });
+      }
+    }
+
     const interval = setInterval(() => {
-      if (user && locationFetched) {
+      if (user) {
         shareLocation();
       }
     }, 5000);
@@ -55,42 +97,7 @@ const SocketProvider = ({ children }) => {
       socket.disconnect();
       clearInterval(interval);
     };
-  }, [user, isAuthenticated, locationFetched]);
-
-  // 🔘 Called only on button click
-  const requestLocation = () => {
-    if (!navigator.geolocation || !user) return;
-
-    navigator.geolocation.getCurrentPosition((position) => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-
-      setUserLocation([lat, lng]);
-      setLocationFetched(true); // ✅ Mark that location was fetched
-
-      socket.emit("register", {
-        username: user.name || "Anonymous",
-        profileUrl: user.picture || "",
-        lat,
-        lng,
-      });
-    });
-  };
-
-  const shareLocation = () => {
-    if (!navigator.geolocation || !user) return;
-
-    navigator.geolocation.getCurrentPosition((position) => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-
-      socket.emit("locationUpdate", { lat, lng });
-
-      if (userLocation[0] !== lat || userLocation[1] !== lng) {
-        setUserLocation([lat, lng]);
-      }
-    });
-  };
+  }, [user, isAuthenticated]);
 
   return (
     <SocketContext.Provider
@@ -108,8 +115,6 @@ const SocketProvider = ({ children }) => {
         loginWithRedirect,
         userLocation,
         setUserLocation,
-        requestLocation,
-        locationFetched,
       }}
     >
       {children}
