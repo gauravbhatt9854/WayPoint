@@ -19,7 +19,7 @@ const Chat = () => {
         socket.off("newChatMessage", handleNewChatMessage);
       };
     }
-  }, []);
+  }, [socket]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
