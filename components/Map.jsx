@@ -9,12 +9,10 @@ const Map = () => {
   const {
     clients,
     user,
-    socket,
+    userLocation
   } = useContext(SocketContext);
 
   const { list, currMap } = useContext(MapContext);
-
-  const [userLocation, setUserLocation] = useState([23, 79]);
 
   const userIcon = new L.Icon({
     iconUrl: user?.picture || import.meta.emv.VITE_SAMPLE_LOGO,
@@ -30,34 +28,6 @@ const Map = () => {
       iconAnchor: [20, 40],
       popupAnchor: [0, -40],
     });
-  };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (user) loc_share();
-    }, 5000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  const loc_share = () => {
-    if (navigator.geolocation && user) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-
-        socket.emit("loc-res", {
-          l1: latitude,
-          l2: longitude,
-        });
-
-        if (userLocation[0] !== latitude || userLocation[1] !== longitude) {
-            setUserLocation((pre) => [latitude , longitude]);
-        }
-      });
-    }
   };
 
   const RecenterMap = ({ location }) => {
@@ -90,9 +60,9 @@ const Map = () => {
           <Popup>{user.name}</Popup>
         </Marker>
 
-        {clients.map(({ id, l1, l2, username, profileUrl }) => (
+        {clients.map(({ id, lat, lng, username, profileUrl }) => (
 
-          <Marker key={id} position={[l1, l2]} icon={getClientIcon(profileUrl)}>
+          <Marker key={id} position={[lat, lng]} icon={getClientIcon(profileUrl)}>
             <Popup>{username} is here on the map</Popup>
             {/* {console.log(profileUrl)} */}
           </Marker>

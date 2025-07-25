@@ -15,6 +15,7 @@ const SocketProvider = (props) => {
   const [isChat, setIsChat] = useState(true);
   const [isMap, setIsMap] = useState(true);
   const [server, setServer] = useState("");
+  const [userLocation, setUserLocation] = useState([23, 79]);
 
   const socket = useMemo(() => {
     return io(SERVER_URL, {
@@ -22,47 +23,79 @@ const SocketProvider = (props) => {
     });
   }, [SERVER_URL]);
 
-  useEffect(() => {
-    if (!isAuthenticated || !user) return;
+useEffect(() => {
+  if (!isAuthenticated || !user) return;
 
-    socket.connect();
+  socket.connect();
 
-    socket.on("setCookie", (data) => {
-      const { name, value, options } = data;
-      setServer(value); // 💡 This updates UI state
+  socket.on("setCookie", (data) => {
+    const { name, value, options } = data;
+    setServer(value);
 
-      let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+    let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+    if (options?.maxAge) {
+      const expires = new Date(Date.now() + options.maxAge).toUTCString();
+      cookieString += `; expires=${expires}`;
+    }
+    if (options?.path) {
+      cookieString += `; path=${options.path}`;
+    }
 
-      if (options?.maxAge) {
-        const expires = new Date(Date.now() + options.maxAge).toUTCString();
-        cookieString += `; expires=${expires}`;
-      }
+    document.cookie = cookieString;
+  });
 
-      if (options?.path) {
-        cookieString += `; path=${options.path}`;
-      }
+  // 🧭 First fetch location, then emit 'register'
+  if (navigator.geolocation && user) {
+    navigator.geolocation.getCurrentPosition((position) => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
 
-      document.cookie = cookieString;
+      setUserLocation([latitude, longitude]);
 
+      socket.emit("register", {
+        username: user.name || "Anonymous",
+        profileUrl: user.picture || "fallback-image-url",
+        lat: latitude,
+        lng: longitude,
+      });
     });
+  }
 
-    socket.emit("register", {
-      l1: 101, // Replace with dynamic values if needed
-      l2: 102,
-      username: user.name || "Anonymous",
-      profileUrl: user.picture || "fallback-image-url",
-    });
+  socket.on("allLocations", (data) => {
+    console.log("data ", data);
+    setClients(data);
+  });
 
-    socket.on("allUsers", (data) => {
-      setClients(data);
-    });
+  function shareLocation() {
+    if (navigator.geolocation && user) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
 
-    return () => {
-      socket.off("setCookie");
-      socket.off("allUsers");
-      socket.disconnect();
-    };
-  }, [user, isAuthenticated, socket]);
+        socket.emit("locationUpdate", {
+          lat: latitude,
+          lng: longitude,
+        });
+
+        if (userLocation[0] !== latitude || userLocation[1] !== longitude) {
+          setUserLocation([latitude, longitude]);
+        }
+      });
+    }
+  }
+
+  const interval = setInterval(() => {
+    if (user) shareLocation();
+  }, 5000);
+
+  return () => {
+    socket.off("setCookie");
+    socket.off("allUsers");
+    socket.disconnect();
+    clearInterval(interval);
+  };
+}, [user, isAuthenticated, socket]);
+
 
   return (
     <SocketContext.Provider
@@ -78,6 +111,8 @@ const SocketProvider = (props) => {
         server,
         isAuthenticated,
         loginWithRedirect,
+        userLocation,
+        setUserLocation,
       }}
     >
       {props.children}
