@@ -12,7 +12,7 @@ function App() {
 
   const { isAuthenticated, isLoading } = useAuth0();
 
-  if (isLoading) return <div>Loading...</div>; // prevents premature rendering
+  if (isLoading) return <div>Loading...</div>;
 
   if (!isAuthenticated) {
     return <div className="h-screen w-screen overflow-hidden">

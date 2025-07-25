@@ -15,7 +15,6 @@ const SocketProvider = (props) => {
   const [isChat, setIsChat] = useState(true);
   const [isMap, setIsMap] = useState(true);
   const [server, setServer] = useState("");
-  const [showContribute, setShowContribute] = useState(false);
 
   const socket = useMemo(() => {
     return io(SERVER_URL, {
@@ -83,8 +82,6 @@ socket.on("setCookie", (data) => {
         server,
         isAuthenticated,
         loginWithRedirect,
-        showContribute,
-        setShowContribute,
       }}
     >
       {props.children}

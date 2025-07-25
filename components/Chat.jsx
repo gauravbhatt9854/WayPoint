@@ -15,7 +15,7 @@ const Chat = () => {
 
     if (socket) {
 
-      socket.on("newChatMessage", handleNewChatMessage);
+      socket.on("newChatMessage", handleNewChatMessage);``
 
       // Cleanup to avoid multiple listeners
       return () => {
@@ -24,7 +24,7 @@ const Chat = () => {
     } else {
       console.warn("Socket not connected. Waiting for reconnection...");
     }
-  }, [messages, socket , user]);
+  }, [messages , socket]);
 
   // Scroll to the latest message
   useEffect(() => {
@@ -52,8 +52,8 @@ const Chat = () => {
   };
 
   return (
-    // <div className={`h-[50%] w-[85%] lg:h-[85%] lg:w-[50%] bg-white shadow-lg rounded-lg border border-gray-300 ${isChat ? 'block' : 'hidden'}`}>
-    <div className={`h-[50%] w-[85%] lg:h-[85%] lg:w-[50%] bg-white shadow-lg rounded-lg border border-gray-300`}>
+    <div className={`h-[50%] w-[85%] lg:h-[85%] lg:w-[50%] bg-white shadow-lg rounded-lg border border-gray-300 ${isChat ? 'block' : 'hidden'}`}>
+    {/* <div className={`h-[50%] w-[85%] lg:h-[85%] lg:w-[50%] bg-white shadow-lg rounded-lg border border-gray-300`}> */}
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           <div className={`${messages.length === 0 ? 'block' : 'hidden'} text-center text-gray-500 font-bold`}>
