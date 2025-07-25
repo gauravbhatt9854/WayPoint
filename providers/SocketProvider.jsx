@@ -3,7 +3,6 @@ import React, {
   createContext,
   useEffect,
   useMemo,
-  useRef,
 } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import io from "socket.io-client";
@@ -20,53 +19,42 @@ const SocketProvider = ({ children }) => {
   const [isMap, setIsMap] = useState(true);
   const [server, setServer] = useState("server1");
   const [userLocation, setUserLocation] = useState([23, 79]);
-  const [isRegistered, setIsRegistered] = useState(false);
 
   const socket = useMemo(() => {
     return io(SERVER_URL, {
       autoConnect: false,
-      transports: ["websocket"],
     });
   }, [SERVER_URL]);
-
-  const locationIntervalRef = useRef(null);
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
-    socket.connect();
+    let isMounted = true;
 
-    // STEP 1: Get current location and emit 'register'
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-
-        setUserLocation([latitude, longitude]);
-
-        socket.emit("register", {
-          username: user.name || "Anonymous",
-          profileUrl: user.picture || "",
-          lat: latitude,
-          lng: longitude,
-        });
-      });
+    if (!socket.connected) {
+      socket.connect();
     }
 
-    // STEP 2: Wait for server acknowledgment
-    socket.on("registered", () => {
-      setIsRegistered(true);
+    socket.emit("register", {
+      username: user.name || "Anonymous",
+      profileUrl: user.picture || "",
+      lat: 0,
+      lng: 0,
     });
 
-    // STEP 3: Listen for all client locations
+    // Listen for all clients' locations
     socket.on("allLocations", (data) => {
-      setClients(data);
+      if (isMounted) {
+        setClients(data);
+      }
     });
 
-    // STEP 4: Periodically update location, only if registered
-    locationIntervalRef.current = setInterval(() => {
-      if (isRegistered && navigator.geolocation) {
+    // Periodically send location update
+    function shareLocation() {
+      if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
+          if (!isMounted) return;
+
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
 
@@ -83,15 +71,19 @@ const SocketProvider = ({ children }) => {
           }
         });
       }
+    }
+
+    const interval = setInterval(() => {
+      if (user) {
+        shareLocation();
+      }
     }, 5000);
 
-    // Cleanup on unmount
     return () => {
-      clearInterval(locationIntervalRef.current);
+      isMounted = false;
       socket.off("allLocations");
-      socket.off("registered");
       socket.disconnect();
-      setIsRegistered(false);
+      clearInterval(interval);
     };
   }, [user, isAuthenticated]);
 
@@ -111,7 +103,6 @@ const SocketProvider = ({ children }) => {
         loginWithRedirect,
         userLocation,
         setUserLocation,
-        isRegistered,
       }}
     >
       {children}
