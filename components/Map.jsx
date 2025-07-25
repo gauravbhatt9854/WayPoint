@@ -77,7 +77,8 @@ const Map = () => {
   };
 
   return (
-    <div className={`${isMap ? 'block' : 'hidden'} h-[50%] lg:h-[85%] w-[85%] lg:w-[50%]`}>
+    // <div className={`${isMap ? 'block' : 'hidden'} h-[50%] lg:h-[85%] w-[85%] lg:w-[50%]`}>
+    <div className={`h-[50%] lg:h-[85%] w-[85%] lg:w-[50%]`}>
       <MapContainer
         center={userLocation}
         zoom={8}

@@ -2,16 +2,20 @@ import React, { useState, createContext, useEffect, useMemo } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import io from "socket.io-client";
 
-const SocketContext = createContext();
+const SocketContext = createContext(null);
 
 const SocketProvider = (props) => {
-  const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
 
   const { user, isAuthenticated, loginWithRedirect, isLoading } = useAuth0();
+  if (!isAuthenticated) return null;
+  
+  const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
+
   const [clients, setClients] = useState([]);
   const [isChat, setIsChat] = useState(true);
   const [isMap, setIsMap] = useState(true);
   const [server, setServer] = useState("");
+  const [showContribute, setShowContribute] = useState(false);
 
   const socket = useMemo(() => {
     return io(SERVER_URL, {
@@ -44,12 +48,12 @@ socket.on("setCookie", (data) => {
 
   document.cookie = cookieString;
 
-  console.log(`🍪 Cookie set: ${cookieString}`);
+  // console.log(`🍪 Cookie set: ${cookieString}`);
 });
 
     socket.emit("register", {
-      l1: 23, // Replace with dynamic values if needed
-      l2: 79,
+      l1: 101, // Replace with dynamic values if needed
+      l2: 102,
       username: user.name || "Anonymous",
       profileUrl: user.picture || "fallback-image-url",
     });
@@ -79,6 +83,8 @@ socket.on("setCookie", (data) => {
         server,
         isAuthenticated,
         loginWithRedirect,
+        showContribute,
+        setShowContribute,
       }}
     >
       {props.children}

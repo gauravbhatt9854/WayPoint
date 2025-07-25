@@ -1,10 +1,7 @@
-import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
 const LoginPage = () => {
   const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
-
-  // Loading state while checking authentication
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -44,4 +41,4 @@ const LoginPage = () => {
   );
 };
 
-export { LoginPage };
+export default LoginPage;

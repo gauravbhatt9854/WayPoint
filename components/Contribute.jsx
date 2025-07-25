@@ -2,9 +2,7 @@ import React from 'react';
 
 const Contribute = () => {
     const VITE_REPO = import.meta.env.VITE_REPO;
-    console.log(VITE_REPO);
   const handleContributeClick = () => {
-    // Redirect to the GitHub repository
     window.open(VITE_REPO, '_blank');
   };
 
@@ -20,4 +18,4 @@ const Contribute = () => {
   );
 };
 
-export { Contribute};
+export default Contribute;
