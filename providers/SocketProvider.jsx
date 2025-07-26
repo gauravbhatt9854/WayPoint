@@ -11,10 +11,9 @@ import { topLayerContext } from "./TopLayerProvider";
 const SocketContext = createContext(null);
 
 const SocketProvider = ({ children }) => {
-
   const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
   const { user, isAuthenticated, loginWithRedirect } = useAuth0();
-  const { socket } = useContext(topLayerContext);
+  const { socket, setMapCenter } = useContext(topLayerContext);
 
   const [clients, setClients] = useState([]);
   const [isChat, setIsChat] = useState(true);
@@ -22,8 +21,7 @@ const SocketProvider = ({ children }) => {
   const [server, setServer] = useState("server1");
   const [userLocation, setUserLocation] = useState([23, 79]);
 
-  // Optional throttle (only send location if more than 4s since last)
-  let lastSentAt = 0;
+  // Shared timestamp for throttling location updates
 
   const shareLocation = useCallback(() => {
     if (!navigator.geolocation || !socket) return;
@@ -42,13 +40,20 @@ const SocketProvider = ({ children }) => {
           }
           return prev;
         });
+
+        setMapCenter((prev) => {
+          if (prev[0] !== lat || prev[1] !== lng) {
+            return [lat, lng];
+          }
+          return prev;
+        });
       },
       (err) => {
         console.error("Geolocation error:", err);
       },
       { enableHighAccuracy: true, timeout: 5000 }
     );
-  }, [socket]);
+  }, [socket, setMapCenter]);
 
   useEffect(() => {
     if (!isAuthenticated || !user || !socket) return;
@@ -57,12 +62,14 @@ const SocketProvider = ({ children }) => {
       socket.connect();
     }
 
+    // Register user with initial location
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
 
-        setUserLocation([lat, lng]); // Update local state
+        setUserLocation([lat, lng]);
+        setMapCenter([lat, lng]);
 
         socket.emit("register", {
           username: user.name || "Anonymous",
@@ -70,13 +77,11 @@ const SocketProvider = ({ children }) => {
           lat,
           lng,
         });
-
-        // console.error("Geolocation  (register):", userLocation);
       },
       (err) => {
         console.error("Geolocation error (register):", err);
 
-        // Fallback if location fails
+        // fallback: register with default coords
         socket.emit("register", {
           username: user.name || "Anonymous",
           profileUrl: user.picture || "",
@@ -87,33 +92,37 @@ const SocketProvider = ({ children }) => {
       { enableHighAccuracy: true, timeout: 5000 }
     );
 
-    setTimeout(() => {
-      fetch(`${SERVER_URL}/clients`).then((data) => {
-        return data.json()
-      }).then((clientsList) => {
-        // console.log("client list ", clientsList);
-        setClients((pre)=>clientsList);
-      })
+    // Delay fetching full client list
+    const fetchClients = async () => {
+      try {
+        const res = await fetch(`${SERVER_URL}/clients`);
+        const data = await res.json();
+        setClients(data);
+      } catch (err) {
+        console.error("Error fetching client list:", err);
+      }
+    };
 
-    }, 1000);
+    setTimeout(fetchClients, 1000);
 
+    // Receive updates from all clients
     const handleAllLocations = (data) => {
-      setClients(data);
-      // ❌ Do NOT send location again here to reduce load
+      setClients(data); // Just update, don’t echo own location again
     };
 
     socket.on("allLocations", handleAllLocations);
 
+    // Location update every 60 seconds
     const interval = setInterval(() => {
       if (user) shareLocation();
     }, 60 * 1000);
 
     return () => {
       socket.off("allLocations", handleAllLocations);
-      socket.disconnect();
+      socket.disconnect(); // optional: can skip this if you want socket to persist across routes
       clearInterval(interval);
     };
-  }, [user, isAuthenticated, socket, shareLocation]);
+  }, [user, isAuthenticated, socket, shareLocation, setMapCenter]);
 
   return (
     <SocketContext.Provider

@@ -14,12 +14,12 @@ const Map = () => {
   const isUserInteracting = useRef(false);
   const hasInitialized = useRef(false); // ✅ Only set center once on first load
 
-  const userIcon = useMemo(() => new L.Icon({
-    iconUrl: user?.picture || import.meta.env.VITE_SAMPLE_LOGO,
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40],
-  }), [user?.picture]);
+  // const userIcon = useMemo(() => new L.Icon({
+  //   iconUrl: user?.picture || import.meta.env.VITE_SAMPLE_LOGO,
+  //   iconSize: [40, 40],
+  //   iconAnchor: [20, 40],
+  //   popupAnchor: [0, -40],
+  // }), [user?.picture]);
 
   const getClientIcon = (profileUrl) => new L.Icon({
     iconUrl: profileUrl || import.meta.env.VITE_RANDOM_LOGO,
