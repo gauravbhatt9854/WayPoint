@@ -32,7 +32,6 @@ const SocketProvider = ({ children }) => {
         const lng = position.coords.longitude;
 
         socket.emit("locationUpdate", { lat, lng });
-        lastSentAt = now;
 
         setUserLocation((prev) => {
           if (prev[0] !== lat || prev[1] !== lng) {
@@ -53,7 +52,7 @@ const SocketProvider = ({ children }) => {
       },
       { enableHighAccuracy: true, timeout: 5000 }
     );
-  }, [socket, setMapCenter]);
+  }, [socket]);
 
   useEffect(() => {
     if (!isAuthenticated || !user || !socket) return;
@@ -62,35 +61,12 @@ const SocketProvider = ({ children }) => {
       socket.connect();
     }
 
-    // Register user with initial location
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        setUserLocation([lat, lng]);
-        setMapCenter([lat, lng]);
-
-        socket.emit("register", {
-          username: user.name || "Anonymous",
-          profileUrl: user.picture || "",
-          lat,
-          lng,
-        });
-      },
-      (err) => {
-        console.error("Geolocation error (register):", err);
-
-        // fallback: register with default coords
-        socket.emit("register", {
-          username: user.name || "Anonymous",
-          profileUrl: user.picture || "",
-          lat: 0,
-          lng: 0,
-        });
-      },
-      { enableHighAccuracy: true, timeout: 5000 }
-    );
+    socket.emit("register", {
+      username: user.name || "Anonymous",
+      profileUrl: user.picture || "",
+      lat: 0,
+      lng: 0,
+    });
 
     // Delay fetching full client list
     const fetchClients = async () => {
@@ -104,6 +80,8 @@ const SocketProvider = ({ children }) => {
     };
 
     setTimeout(fetchClients, 5000);
+    setTimeout(shareLocation ,5000);
+
 
     // Receive updates from all clients
     const handleAllLocations = (data) => {
