@@ -103,7 +103,7 @@ const SocketProvider = ({ children }) => {
       }
     };
 
-    setTimeout(fetchClients, 1000);
+    setTimeout(fetchClients, 5000);
 
     // Receive updates from all clients
     const handleAllLocations = (data) => {
