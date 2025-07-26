@@ -12,7 +12,7 @@ const SocketContext = createContext(null);
 
 const SocketProvider = ({ children }) => {
   const { user, isAuthenticated, loginWithRedirect } = useAuth0();
-  const socket = useContext(topLayerContext);
+  const {socket} = useContext(topLayerContext);
 
   const [clients, setClients] = useState([]);
   const [isChat, setIsChat] = useState(true);

@@ -4,12 +4,15 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { SocketContext } from "../providers/SocketProvider";
 import { MapContext } from "../providers/MapProvider";
+import { topLayerContext } from "../providers/TopLayerProvider";
 
 const Map = () => {
   const { clients, user, userLocation, isMap } = useContext(SocketContext);
+  const { setMapCenter, mapCenter } = useContext(topLayerContext);
   const { list, currMap } = useContext(MapContext);
 
-  const isUserInteracting = useRef(false); // ✅ useRef for consistent state
+  const isUserInteracting = useRef(false);
+  const hasInitialized = useRef(false); // ✅ Only set center once on first load
 
   const userIcon = useMemo(() => new L.Icon({
     iconUrl: user?.picture || import.meta.env.VITE_SAMPLE_LOGO,
@@ -29,8 +32,10 @@ const Map = () => {
     const map = useMap();
 
     useEffect(() => {
-      if (!isUserInteracting.current) {
+      if (!hasInitialized.current) {
         map.setView(location, map.getZoom());
+        setMapCenter(location); // ✅ Set mapCenter state only once
+        hasInitialized.current = true;
       }
     }, [location]);
 
@@ -48,12 +53,14 @@ const Map = () => {
       zoomend: () => {
         setTimeout(() => {
           isUserInteracting.current = false;
-        }, 10000); // user inactive after 10s
+        }, 10000);
+        setMapCenter([map.getCenter().lat, map.getCenter().lng]); // ✅ Update center on zoom
       },
       moveend: () => {
         setTimeout(() => {
           isUserInteracting.current = false;
         }, 10000);
+        setMapCenter([map.getCenter().lat, map.getCenter().lng]); // ✅ Update center on move
       },
     });
 
@@ -73,7 +80,7 @@ const Map = () => {
   return (
     <div className={`${isMap ? 'block' : 'hidden'} h-[50%] lg:h-[85%] w-[85%] lg:w-[50%]`}>
       <MapContainer
-        center={userLocation}
+        center={mapCenter || userLocation} // fallback to userLocation just in case
         zoom={8}
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%' }}

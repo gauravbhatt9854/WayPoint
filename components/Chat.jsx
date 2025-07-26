@@ -4,7 +4,7 @@ import { topLayerContext } from "../providers/TopLayerProvider";
 
 const Chat = () => {
   const { user, isChat } = useContext(SocketContext);
-  const socket = useContext(topLayerContext); // ✅ fixed
+  const {socket} = useContext(topLayerContext); // ✅ fixed
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
