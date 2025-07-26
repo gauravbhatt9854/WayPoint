@@ -71,7 +71,7 @@ const SocketProvider = ({ children }) => {
           lng,
         });
 
-        console.error("Geolocation  (register):", userLocation);
+        // console.error("Geolocation  (register):", userLocation);
       },
       (err) => {
         console.error("Geolocation error (register):", err);
@@ -91,7 +91,7 @@ const SocketProvider = ({ children }) => {
       fetch(`${SERVER_URL}/clients`).then((data) => {
         return data.json()
       }).then((clientsList) => {
-        console.log("client list ", clientsList);
+        // console.log("client list ", clientsList);
         setClients((pre)=>clientsList);
       })
 
