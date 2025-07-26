@@ -1,4 +1,4 @@
-import { useEffect, useContext, useMemo, useState, useRef } from "react";
+import { useEffect, useContext, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -81,7 +81,7 @@ const Map = () => {
     <div className={`${isMap ? 'block' : 'hidden'} h-[50%] lg:h-[85%] w-[85%] lg:w-[50%]`}>
       <MapContainer
         center={mapCenter || userLocation} // fallback to userLocation just in case
-        zoom={8}
+        zoom={4}
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%' }}
       >
@@ -92,10 +92,6 @@ const Map = () => {
 
         <MapEventHandler />
         <RecenterMap location={userLocation} />
-
-        <Marker position={userLocation} icon={userIcon}>
-          <Popup>{user.name}</Popup>
-        </Marker>
 
         {ClientMarkers}
       </MapContainer>

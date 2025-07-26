@@ -11,8 +11,10 @@ import { topLayerContext } from "./TopLayerProvider";
 const SocketContext = createContext(null);
 
 const SocketProvider = ({ children }) => {
+
+  const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
   const { user, isAuthenticated, loginWithRedirect } = useAuth0();
-  const {socket} = useContext(topLayerContext);
+  const { socket } = useContext(topLayerContext);
 
   const [clients, setClients] = useState([]);
   const [isChat, setIsChat] = useState(true);
@@ -25,9 +27,6 @@ const SocketProvider = ({ children }) => {
 
   const shareLocation = useCallback(() => {
     if (!navigator.geolocation || !socket) return;
-
-    const now = Date.now();
-    if (now - lastSentAt < 4000) return; // Throttle: skip if too soon
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -58,12 +57,45 @@ const SocketProvider = ({ children }) => {
       socket.connect();
     }
 
-    socket.emit("register", {
-      username: user.name || "Anonymous",
-      profileUrl: user.picture || "",
-      lat: 0,
-      lng: 0,
-    });
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        setUserLocation([lat, lng]); // Update local state
+
+        socket.emit("register", {
+          username: user.name || "Anonymous",
+          profileUrl: user.picture || "",
+          lat,
+          lng,
+        });
+
+        console.error("Geolocation  (register):", userLocation);
+      },
+      (err) => {
+        console.error("Geolocation error (register):", err);
+
+        // Fallback if location fails
+        socket.emit("register", {
+          username: user.name || "Anonymous",
+          profileUrl: user.picture || "",
+          lat: 0,
+          lng: 0,
+        });
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+
+    setTimeout(() => {
+      fetch(`${SERVER_URL}/clients`).then((data) => {
+        return data.json()
+      }).then((clientsList) => {
+        console.log("client list ", clientsList);
+        setClients((pre)=>clientsList);
+      })
+
+    }, 1000);
 
     const handleAllLocations = (data) => {
       setClients(data);
@@ -74,7 +106,7 @@ const SocketProvider = ({ children }) => {
 
     const interval = setInterval(() => {
       if (user) shareLocation();
-    }, 100000);
+    }, 60 * 1000);
 
     return () => {
       socket.off("allLocations", handleAllLocations);
