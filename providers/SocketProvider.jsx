@@ -74,7 +74,7 @@ const SocketProvider = ({ children }) => {
 
     const interval = setInterval(() => {
       if (user) shareLocation();
-    }, 5000);
+    }, 100000);
 
     return () => {
       socket.off("allLocations", handleAllLocations);
