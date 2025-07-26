@@ -1,8 +1,10 @@
 import { useState, useEffect, useContext, useRef } from "react";
 import { SocketContext } from "../providers/SocketProvider";
+import { topLayerContext } from "../providers/TopLayerProvider";
 
 const Chat = () => {
-  const { user, socket, isChat } = useContext(SocketContext);
+  const { user, isChat } = useContext(SocketContext);
+  const socket = useContext(topLayerContext); // ✅ fixed
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
@@ -59,9 +61,8 @@ const Chat = () => {
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`flex items-start mb-2 ${
-                msg.username === "You" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex items-start mb-2 ${msg.username === "You" ? "justify-end" : "justify-start"
+                }`}
             >
               {msg.username !== "You" && (
                 <img
@@ -72,11 +73,10 @@ const Chat = () => {
               )}
               <div>
                 <div
-                  className={`p-2 rounded-lg max-w-xs break-words ${
-                    msg.username === "You"
+                  className={`p-2 rounded-lg max-w-xs break-words ${msg.username === "You"
                       ? "bg-blue-500 text-white"
                       : "bg-gray-200 text-gray-800"
-                  }`}
+                    }`}
                 >
                   <p className="text-sm">{msg.message}</p>
                 </div>

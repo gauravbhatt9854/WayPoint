@@ -1,18 +1,18 @@
-import React, {
+import {
   useState,
   createContext,
   useEffect,
-  useMemo,
   useCallback,
+  useContext,
 } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import io from "socket.io-client";
+import { topLayerContext } from "./TopLayerProvider";
 
 const SocketContext = createContext(null);
 
 const SocketProvider = ({ children }) => {
-  const { user, isAuthenticated, loginWithRedirect, isLoading } = useAuth0();
-  const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
+  const { user, isAuthenticated, loginWithRedirect } = useAuth0();
+  const socket = useContext(topLayerContext);
 
   const [clients, setClients] = useState([]);
   const [isChat, setIsChat] = useState(true);
@@ -20,17 +20,14 @@ const SocketProvider = ({ children }) => {
   const [server, setServer] = useState("server1");
   const [userLocation, setUserLocation] = useState([23, 79]);
 
-  const socket = useMemo(() => {
-    const s = io(SERVER_URL, {
-      autoConnect: false,
-      transports: ["websocket"], // force WebSocket (avoid polling)
-    });
-    return s;
-  }, [SERVER_URL]);
+  // Optional throttle (only send location if more than 4s since last)
+  let lastSentAt = 0;
 
-  // Share location only when user allows via button click or similar
   const shareLocation = useCallback(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation || !socket) return;
+
+    const now = Date.now();
+    if (now - lastSentAt < 4000) return; // Throttle: skip if too soon
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -38,6 +35,7 @@ const SocketProvider = ({ children }) => {
         const lng = position.coords.longitude;
 
         socket.emit("locationUpdate", { lat, lng });
+        lastSentAt = now;
 
         setUserLocation((prev) => {
           if (prev[0] !== lat || prev[1] !== lng) {
@@ -54,14 +52,12 @@ const SocketProvider = ({ children }) => {
   }, [socket]);
 
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated || !user || !socket) return;
 
-    // Connect once only
     if (!socket.connected) {
       socket.connect();
     }
 
-    // Register user once
     socket.emit("register", {
       username: user.name || "Anonymous",
       profileUrl: user.picture || "",
@@ -71,6 +67,7 @@ const SocketProvider = ({ children }) => {
 
     const handleAllLocations = (data) => {
       setClients(data);
+      // ❌ Do NOT send location again here to reduce load
     };
 
     socket.on("allLocations", handleAllLocations);
@@ -92,7 +89,6 @@ const SocketProvider = ({ children }) => {
         clients,
         setClients,
         user,
-        socket,
         isChat,
         setIsChat,
         isMap,
@@ -102,7 +98,7 @@ const SocketProvider = ({ children }) => {
         loginWithRedirect,
         userLocation,
         setUserLocation,
-        shareLocation, // expose for user-triggered location sharing
+        shareLocation,
       }}
     >
       {children}

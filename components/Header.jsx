@@ -8,8 +8,7 @@ const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { list, currMap, setCurrMap } = useContext(MapContext);
   const { isChat, setIsChat, isMap, setIsMap, server } = useContext(SocketContext);
-  const { user, isAuthenticated, isLoading, loginWithRedirect, logout } =
-    useAuth0();
+  const { user, logout } = useAuth0();
   const logo = import.meta.env.VITE_SAMPLE_LOGO
   // console.log("logo is" , logo)
 
