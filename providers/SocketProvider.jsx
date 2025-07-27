@@ -73,19 +73,19 @@ const SocketProvider = ({ children }) => {
       try {
         const res = await fetch(`${SERVER_URL}/clients`);
         const data = await res.json();
-        setClients(data);
+        setClients(()=>data);
       } catch (err) {
         console.error("Error fetching client list:", err);
       }
     };
 
     setTimeout(fetchClients, 5000);
-    setTimeout(shareLocation ,5000);
+    setTimeout(shareLocation ,2000);
 
 
     // Receive updates from all clients
     const handleAllLocations = (data) => {
-      setClients(data); // Just update, don’t echo own location again
+      setClients(()=>data); // Just update, don’t echo own location again
     };
 
     socket.on("allLocations", handleAllLocations);
@@ -93,14 +93,14 @@ const SocketProvider = ({ children }) => {
     // Location update every 60 seconds
     const interval = setInterval(() => {
       if (user) shareLocation();
-    }, 60 * 1000);
+    }, 30 * 1000);
 
     return () => {
       socket.off("allLocations", handleAllLocations);
       socket.disconnect(); // optional: can skip this if you want socket to persist across routes
       clearInterval(interval);
     };
-  }, [user, isAuthenticated, socket, shareLocation, setMapCenter]);
+  }, [socket]);
 
   return (
     <SocketContext.Provider
