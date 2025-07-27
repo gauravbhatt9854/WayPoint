@@ -1,18 +1,32 @@
-# Use the official Node.js 20 image
-FROM node:20
+# ---------- Step 1: Build the React app ----------
+FROM node:20 AS builder
 
-# Set working directory inside the container
 WORKDIR /app
 
-# Copy package.json and install dependencies
+# Copy package files and install dependencies
 COPY package.json package-lock.json* ./
 RUN npm install
 
-# Copy the rest of the application code
+# Copy the entire project and build it
 COPY . .
+RUN npm run build
 
-# Expose the port defined in vite.config.js (default is 5173)
-EXPOSE 5173
 
-# Start the development server
-CMD ["npm", "run", "dev"]
+# ---------- Step 2: Run the production build with Node ----------
+FROM node:20 AS runner
+
+WORKDIR /app
+
+# Install production-only deps
+COPY package.json package-lock.json* ./
+RUN npm install --only=production
+
+# Copy built app and server file
+COPY --from=builder /app/dist ./dist
+COPY server.js .
+
+# Expose port used by your server (e.g., 3000)
+EXPOSE 3000
+
+# Start the server
+CMD ["node", "server.js"]
