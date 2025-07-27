@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts:["*.golu.codes"],
+    allowedHosts:["way.golu.codes"],
     watch: {
       usePolling: true,
     },
