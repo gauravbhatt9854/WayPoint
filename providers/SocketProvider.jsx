@@ -2,124 +2,127 @@ import {
   useState,
   createContext,
   useEffect,
-  useCallback,
-  useContext,
 } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { topLayerContext } from "./TopLayerProvider";
+import socket from "./socketInstance";
 
 const SocketContext = createContext(null);
 
 const SocketProvider = ({ children }) => {
-  const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
-  const { user, isAuthenticated, loginWithRedirect } = useAuth0();
-  const { socket, setMapCenter } = useContext(topLayerContext);
-
+  const { user } = useAuth0();
   const [clients, setClients] = useState([]);
-  const [isChat, setIsChat] = useState(true);
-  const [isMap, setIsMap] = useState(true);
-  const [server, setServer] = useState("server1");
-  const [userLocation, setUserLocation] = useState([23, 79]);
+  const [currentLocation, setCurrentLocation] = useState([0, 0]);
 
-  // Shared timestamp for throttling location updates
-
-  const shareLocation = useCallback(() => {
-    if (!navigator.geolocation || !socket) return;
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        socket.emit("locationUpdate", { lat, lng });
-
-        setUserLocation((prev) => {
-          if (prev[0] !== lat || prev[1] !== lng) {
-            return [lat, lng];
-          }
-          return prev;
-        });
-
-        setMapCenter((prev) => {
-          if (prev[0] !== lat || prev[1] !== lng) {
-            return [lat, lng];
-          }
-          return prev;
-        });
-      },
-      (err) => {
-        console.error("Geolocation error:", err);
-      },
-      { enableHighAccuracy: true, timeout: 5000 }
-    );
-  }, [socket]);
-
+  // 🔁 Share location live via watchPosition
+  const SERVER_URL= import.meta.env.VITE_SOCKET_SERVER;
   useEffect(() => {
-    if (!isAuthenticated || !user || !socket) return;
+    let watchId;
 
-    if (!socket.connected) {
-      socket.connect();
+    if (navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setCurrentLocation([latitude, longitude]);
+          socket.emit("locationUpdate", { lat: latitude, lng: longitude });
+          console.log("📡 Live position:", latitude, longitude);
+        },
+        (err) => {
+          console.error("❌ Geolocation error:", err.code, err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
+      );
+    } else {
+      console.error("❌ Geolocation is not supported");
     }
 
-    socket.emit("register", {
-      username: user.name || "Anonymous",
-      profileUrl: user.picture || "",
-      lat: 0,
-      lng: 0,
+    return () => {
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+    };
+  }, []);
+
+  // 🔁 Main socket setup
+  useEffect(() => {
+    if (!socket) return;
+    if (!socket.connected) socket.connect();
+
+    const registerUser = () => {
+      console.log("✅ Registering user...");
+      socket.emit("register", {
+        username: user?.name || "Anonymous",
+        profileUrl: user?.picture || "",
+        lat: currentLocation[0] || 0,
+        lng: currentLocation[1] || 0,
+      });
+    };
+
+    // 🔌 Socket connection lifecycle logging
+    socket.on("connect", () => {
+      console.log("🔌 Socket connected:", socket.id);
+      registerUser(); // Register on first connect and reconnect
     });
 
-    // Delay fetching full client list
+    socket.on("disconnect", (reason) => {
+      console.warn("❌ Socket disconnected:", reason);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("❗ Connection error:", err.message);
+    });
+
+    socket.on("reconnect_attempt", (attempt) => {
+      console.log(`🔄 Reconnect attempt #${attempt}`);
+    });
+
+    socket.on("reconnect", (attempt) => {
+      console.log(`✅ Reconnected after ${attempt} tries`);
+    });
+
+    socket.on("reconnect_failed", () => {
+      console.error("❌ Reconnect failed");
+    });
+
+    // 🔄 Receive all locations
+    const handleAllLocations = (data) => {
+      setClients(data);
+
+      const isPresent = data.some(
+        (client) => client.username === (user?.name || "Anonymous")
+      );
+
+      if (!isPresent) {
+        console.warn("⚠️ User missing from list. Re-registering...");
+        registerUser();
+      }
+    };
+
+    socket.on("allLocations", handleAllLocations);
+
+    // Optional backup fetch
     const fetchClients = async () => {
       try {
         const res = await fetch(`${SERVER_URL}/clients`);
         const data = await res.json();
-        setClients(()=>data);
+        setClients(data);
       } catch (err) {
         console.error("Error fetching client list:", err);
       }
     };
 
-    setTimeout(fetchClients, 5000);
-    setTimeout(shareLocation ,2000);
-
-
-    // Receive updates from all clients
-    const handleAllLocations = (data) => {
-      setClients(()=>data); // Just update, don’t echo own location again
-    };
-
-    socket.on("allLocations", handleAllLocations);
-
-    // Location update every 60 seconds
-    const interval = setInterval(() => {
-      if (user) shareLocation();
-    }, 30 * 1000);
+    setTimeout(fetchClients, 3000); // Wait for initial socket events
 
     return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("connect_error");
+      socket.off("reconnect_attempt");
+      socket.off("reconnect");
+      socket.off("reconnect_failed");
       socket.off("allLocations", handleAllLocations);
-      socket.disconnect(); // optional: can skip this if you want socket to persist across routes
-      clearInterval(interval);
     };
-  }, [socket]);
+  }, [user, currentLocation]);
 
   return (
-    <SocketContext.Provider
-      value={{
-        clients,
-        setClients,
-        user,
-        isChat,
-        setIsChat,
-        isMap,
-        setIsMap,
-        server,
-        isAuthenticated,
-        loginWithRedirect,
-        userLocation,
-        setUserLocation,
-        shareLocation,
-      }}
-    >
+    <SocketContext.Provider value={{ clients }}>
       {children}
     </SocketContext.Provider>
   );

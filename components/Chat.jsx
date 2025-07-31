@@ -1,10 +1,11 @@
 import { useState, useEffect, useContext, useRef } from "react";
-import { SocketContext } from "../providers/SocketProvider";
-import { topLayerContext } from "../providers/TopLayerProvider";
+import { ChatContext } from "../providers/ChatProvider";
+import socket from "../providers/socketInstance";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const Chat = () => {
-  const { user, isChat } = useContext(SocketContext);
-  const {socket} = useContext(topLayerContext); // ✅ fixed
+  const { isChat } = useContext(ChatContext);
+  const { user } = useAuth0();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
@@ -74,8 +75,8 @@ const Chat = () => {
               <div>
                 <div
                   className={`p-2 rounded-lg max-w-xs break-words ${msg.username === "You"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-800"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-800"
                     }`}
                 >
                   <p className="text-sm">{msg.message}</p>

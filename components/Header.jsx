@@ -7,10 +7,12 @@ import { MapContext, MapProvider } from "../providers/MapProvider";
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { list, currMap, setCurrMap } = useContext(MapContext);
-  const { isChat, setIsChat, isMap, setIsMap, server } = useContext(SocketContext);
+  const { isChat, setIsChat, isMap, setIsMap } = useContext(SocketContext);
   const { user, logout } = useAuth0();
   const logo = import.meta.env.VITE_SAMPLE_LOGO
   // console.log("logo is" , logo)
+
+   const [server, setServer] = useState("server1");
 
   return (
     <div className="lg:h-[15%] w-full h-[10%] bg-gray-800 text-white p-4 shadow-lg lg:mb-0 flex justify-between items-center relative z-10">

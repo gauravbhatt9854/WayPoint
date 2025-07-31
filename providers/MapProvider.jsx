@@ -1,12 +1,13 @@
-import React, { createContext  , useState} from 'react'
+import React, { createContext, useState } from 'react'
 import { useAuth0 } from "@auth0/auth0-react";
 const MapContext = createContext();
 
 const MapProvider = (props) => {
-const { isAuthenticated } = useAuth0();
-  if (!isAuthenticated) return null;
+    const { isAuthenticated } = useAuth0();
+    if (!isAuthenticated) return null;
 
-    const [currMap , setCurrMap] = useState(2);
+    const [currMap, setCurrMap] = useState(2);
+    const [isMap, setIsMap] = useState(true);
 
     const list = [
         {
@@ -29,18 +30,18 @@ const { isAuthenticated } = useAuth0();
             url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
             type: 'satellite'
         },
-        {   
-            attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>', 
-            url: "https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}.jpg" ,
+        {
+            attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a>',
+            url: "https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}.jpg",
             type: 'satellite'
         },
     ];
-    
+
     return (
-        <MapContext.Provider value={{list , currMap , setCurrMap}}>
+        <MapContext.Provider value={{ list, currMap, setCurrMap ,  isMap , setIsMap }}>
             {props.children}
         </MapContext.Provider>
     )
 }
 
-export  {MapProvider , MapContext}
+export { MapProvider, MapContext }

@@ -1,6 +1,9 @@
 import { useAuth0 } from "@auth0/auth0-react";
 
 const LoginPage = () => {
+
+  console.log(import.meta.env.VITE_CLIENT);
+  console.log("hello your process env is above");
   const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
   if (isLoading) {
     return (

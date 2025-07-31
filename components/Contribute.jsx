@@ -1,8 +1,10 @@
 import { useContext } from "react";
-import { SocketContext } from "../providers/SocketProvider";
+import { MapContext } from "../providers/MapProvider";
+import { ChatContext } from "../providers/ChatProvider";
 
 const Contribute = () => {
-  const { isMap, isChat } = useContext(SocketContext);
+  const { isMap } = useContext(MapContext);
+  const { isChat } = useContext(ChatContext);
 
   // ✅ If either is true, return null (hide this page)
   if (isChat || isMap) return null;
