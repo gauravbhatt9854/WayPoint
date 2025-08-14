@@ -24,8 +24,7 @@ Try the app instantly using these guest credentials:
 ## Tech Stack
 
 - **Frontend:** React, Tailwind CSS  
-- **Backend:** Node.js, Express  
-- **Database:** MongoDB  
+- **Backend:** Node.js, Express
 - **Real-Time Communication:** Socket.io  
 - **Mapping:** React Leaflet  
 - **Deployment:** Oracle EC2, Coolify  
