@@ -1,8 +1,7 @@
-import React, { useContext } from 'react';
+import React, { Suspense } from 'react';
 import { MapProvider } from '../providers/MapProvider';
 import { ChatProvider } from '../providers/ChatProvider';
 import { SocketProvider } from '../providers/SocketProvider';
-
 
 // Lazy imports
 const Map = React.lazy(() => import('./Map'));
@@ -12,27 +11,34 @@ const Header = React.lazy(() => import("../components/Header"));
 
 const Home = () => {
   return (
-    <>
-      <SocketProvider>
-        <ChatProvider>
-          <MapProvider>
-            {/* Full viewport container */}
-            <div className="flex flex-col h-screen w-full  overflow-hidden relative z-1">
+    <SocketProvider>
+      <ChatProvider>
+        <MapProvider>
+          <div className="flex flex-col h-screen w-full overflow-hidden">
 
+            <Suspense fallback={<div>Loading Header...</div>}>
               <Header />
+            </Suspense>
 
-              <div className="flex flex-col lg:flex-row gap-5 flex-1 h-[80%] justify-center items-center p-5 overflow-auto">
+            <div className="flex flex-col lg:flex-row gap-5 flex-1 p-5 overflow-auto">
+              <Suspense fallback={<div>Loading Chat...</div>}>
                 <Chat />
-                <Map />
-                <Contribute />
-              </div>
+              </Suspense>
 
+              <Suspense fallback={<div>Loading Map...</div>}>
+                <Map />
+              </Suspense>
+
+              <Suspense fallback={<div>Loading Contribute...</div>}>
+                <Contribute />
+              </Suspense>
             </div>
-          </MapProvider>
-        </ChatProvider>
-      </SocketProvider>
-    </>
+
+          </div>
+        </MapProvider>
+      </ChatProvider>
+    </SocketProvider>
   )
 }
 
-export default Home
+export default Home;
