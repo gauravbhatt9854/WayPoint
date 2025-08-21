@@ -15,10 +15,7 @@ const SocketProvider = ({ children }) => {
     let watchId;
     if (navigator.geolocation) {
       watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          setCurrentLocation([latitude, longitude]);
-        },
+        (pos) => setCurrentLocation([pos.coords.latitude, pos.coords.longitude]),
         (err) => console.error("Geolocation error:", err),
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
       );
@@ -41,22 +38,6 @@ const SocketProvider = ({ children }) => {
       });
     };
 
-    const handleAllLocations = (data) => {
-      setClients(data);
-    };
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-      registerUser();
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.warn("Socket disconnected:", reason);
-    });
-
-    // socket.on("allLocations", handleAllLocations);
-
-    // Optional: fetch initial client list
     const fetchClients = async () => {
       try {
         const res = await fetch(`${SERVER_URL}/clients`);
@@ -67,12 +48,18 @@ const SocketProvider = ({ children }) => {
       }
     };
 
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      registerUser();
+    });
+
+    socket.on("disconnect", (reason) => console.warn("Socket disconnected:", reason));
+
     setTimeout(fetchClients, 5000);
 
     return () => {
       socket.off("connect");
       socket.off("disconnect");
-      socket.off("allLocations", handleAllLocations);
     };
   }, [user, SERVER_URL]);
 
@@ -85,9 +72,8 @@ const SocketProvider = ({ children }) => {
           lat: currentLocation[0],
           lng: currentLocation[1],
         });
-        console.log("Location sent:", currentLocation);
       }
-    }, 10000); // every 10 seconds
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [currentLocation, user]);
