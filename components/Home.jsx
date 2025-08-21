@@ -8,15 +8,31 @@ import { SocketProvider } from '../providers/SocketProvider';
 const Map = React.lazy(() => import('./Map'));
 const Chat = React.lazy(() => import('./Chat'));
 const Contribute = React.lazy(() => import('./Contribute'));
+const Header = React.lazy(() => import("../components/Header"));
 
 const Home = () => {
-    return (
-        <div className="pl-2 md:pl-10 pt-5 lg:pt-0 h-[85%] lg:h-[85%] w-full flex flex-col lg:flex-row gap-5 justify-center lg:p-5 items-center overflow-hidden relative z-1">
-            <ChatProvider><Chat></Chat></ChatProvider>
-            <SocketProvider><MapProvider> <Map></Map> </MapProvider></SocketProvider>
-            <ChatProvider><MapProvider> <Contribute></Contribute> </MapProvider></ChatProvider>
-        </div>
-    )
+  return (
+    <>
+      <SocketProvider>
+        <ChatProvider>
+          <MapProvider>
+            {/* Full viewport container */}
+            <div className="flex flex-col h-screen w-full  overflow-hidden relative z-1">
+
+              <Header />
+
+              <div className="flex flex-col lg:flex-row gap-5 flex-1 h-[80%] justify-center items-center p-5 overflow-auto">
+                <Chat />
+                <Map />
+                <Contribute />
+              </div>
+
+            </div>
+          </MapProvider>
+        </ChatProvider>
+      </SocketProvider>
+    </>
+  )
 }
 
 export default Home

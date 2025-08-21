@@ -1,11 +1,11 @@
 import { useState, useEffect, useContext, useRef } from "react";
 import { ChatContext } from "../providers/ChatProvider";
 import socket from "../providers/socketInstance";
-import { useAuth0 } from "@auth0/auth0-react";
+import { UserContext } from "../providers/UserProvider";
 
 const Chat = () => {
   const { isChat } = useContext(ChatContext);
-  const { user } = useAuth0();
+  const { user } = useContext(UserContext);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
