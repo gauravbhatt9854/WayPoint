@@ -18,9 +18,6 @@ const SocketProvider = ({ children }) => {
         (pos) => {
           const { latitude, longitude } = pos.coords;
           setCurrentLocation([latitude, longitude]);
-          if (socket.connected) {
-            socket.emit("locationUpdate", { lat: latitude, lng: longitude });
-          }
         },
         (err) => console.error("Geolocation error:", err),
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
@@ -57,7 +54,7 @@ const SocketProvider = ({ children }) => {
       console.warn("Socket disconnected:", reason);
     });
 
-    socket.on("allLocations", handleAllLocations);
+    // socket.on("allLocations", handleAllLocations);
 
     // Optional: fetch initial client list
     const fetchClients = async () => {
@@ -69,26 +66,37 @@ const SocketProvider = ({ children }) => {
         console.error("Error fetching clients:", err);
       }
     };
-    setTimeout(fetchClients, 3000);
+
+    setTimeout(fetchClients, 5000);
 
     return () => {
       socket.off("connect");
       socket.off("disconnect");
       socket.off("allLocations", handleAllLocations);
     };
-  }, [user, SERVER_URL]); // Only re-run if user changes
+  }, [user, SERVER_URL]);
 
-  // ---------------- Emit location when it changes ----------------
+  // ---------------- Emit location every 10 seconds ----------------
   useEffect(() => {
-    if (socket.connected && user) {
-      socket.emit("locationUpdate", {
-        lat: currentLocation[0],
-        lng: currentLocation[1],
-      });
-    }
+    if (!user) return;
+    const interval = setInterval(() => {
+      if (socket.connected) {
+        socket.emit("locationUpdate", {
+          lat: currentLocation[0],
+          lng: currentLocation[1],
+        });
+        console.log("Location sent:", currentLocation);
+      }
+    }, 10000); // every 10 seconds
+
+    return () => clearInterval(interval);
   }, [currentLocation, user]);
 
-  return <SocketContext.Provider value={{ clients }}>{children}</SocketContext.Provider>;
+  return (
+    <SocketContext.Provider value={{ clients, currentLocation }}>
+      {children}
+    </SocketContext.Provider>
+  );
 };
 
 export { SocketProvider, SocketContext };
