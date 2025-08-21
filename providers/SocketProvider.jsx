@@ -42,7 +42,7 @@ const SocketProvider = ({ children }) => {
       try {
         const res = await fetch(`${SERVER_URL}/clients`);
         const data = await res.json();
-        setClients(data);
+        setClients(() => data);
       } catch (err) {
         console.error("Error fetching clients:", err);
       }
@@ -55,11 +55,16 @@ const SocketProvider = ({ children }) => {
 
     socket.on("disconnect", (reason) => console.warn("Socket disconnected:", reason));
 
-    setTimeout(fetchClients, 5000);
+    fetchClients();
+
+    // Then fetch every 5 seconds
+    const interval = setInterval(fetchClients, 5000);
+
 
     return () => {
       socket.off("connect");
       socket.off("disconnect");
+      clearInterval(interval);
     };
   }, [user, SERVER_URL]);
 

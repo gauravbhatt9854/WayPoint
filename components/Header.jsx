@@ -6,8 +6,8 @@ import { ChatContext } from "../providers/ChatProvider";
 import { FaMap, FaComments, FaServer, FaSignOutAlt, FaLayerGroup } from "react-icons/fa";
 
 const Header = () => {
-  const { list, currMap, setCurrMap } = useContext(MapContext);
-  const { isChat, setIsChat } = useContext(ChatContext);
+  const { list, currMap, setCurrMap , setIsMap } = useContext(MapContext);
+  const { setIsChat } = useContext(ChatContext);
   const { user, handleLogout } = useContext(UserContext);
   const logo = import.meta.env.VITE_SAMPLE_LOGO;
 
@@ -48,7 +48,7 @@ const Header = () => {
         </button>
 
         <button
-          onClick={() => setIsChat(prev => !prev)}
+          onClick={() => setIsMap(prev => !prev)}
           className="bg-blue-600 hover:bg-blue-700 p-2 rounded-md text-white flex items-center justify-center text-sm sm:text-lg"
           title="Toggle Map"
         >

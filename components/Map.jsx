@@ -7,7 +7,7 @@ import { MapContext } from "../providers/MapProvider";
 
 const Map = () => {
   const [mapCenter, setMapCenter] = useState([20, 78]); // default India center
-  const { clients = [] } = useContext(SocketContext);
+  const { clients } = useContext(SocketContext);
   const { list, currMap, isMap } = useContext(MapContext);
 
   const hasInitialized = useRef(false);
