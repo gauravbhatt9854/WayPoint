@@ -1,42 +1,19 @@
-import { lazy, useContext, useEffect, useState } from "react";
+import { lazy } from "react";
 import "./App.css";
 import './index.css';
-import { UserContext } from "../providers/UserProvider.jsx";
-import { jwtDecode } from "jwt-decode";
 
-
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 const Home = lazy(() => import("../components/Home"));
-const LoginPage = lazy(() => import("../components/LoginPage"));
+const Login = lazy(() => import("../components/LoginPage"));
 
-function App() { 
-  const { user, setUser } = useContext(UserContext);
-
-  // Check localStorage for existing token on mount
-  useEffect(() => {
-    const token = localStorage.getItem("googleToken");
-    if (token) {
-      try {
-        const decodedUser = jwtDecode(token);
-        setUser(decodedUser);
-      } catch (err) {
-        console.log("Invalid token, clearing localStorage");
-        localStorage.removeItem("googleToken");
-      }
-    }
-  }, []);
-
-  if (!user) {
-    return (
-      <div>
-        <LoginPage />
-      </div>
-    );
-  }
-
+function App() {
   return (
-    <div>
-      <Home />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -20,7 +20,7 @@ const Header = () => {
           <img src={user?.picture || logo} alt="profile" />
         </div>
         <h1 className="text-xs sm:text-sm lg:text-base font-semibold truncate max-w-[80px] text-center sm:text-left">
-          {user?.name}
+          {user?.username}
         </h1>
       </div>
 

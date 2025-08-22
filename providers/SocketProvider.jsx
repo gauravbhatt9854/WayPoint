@@ -25,13 +25,14 @@ const SocketProvider = ({ children }) => {
 
   // ---------------- Socket setup ----------------
   useEffect(() => {
+    if(user==null) return;
     if (!socket) return;
     if (!socket.connected) socket.connect();
 
     const registerUser = () => {
       if (!user) return;
       socket.emit("register", {
-        username: user.name || "Anonymous",
+        username: user.username || "Anonymous",
         profileUrl: user.picture || "",
         lat: currentLocation[0],
         lng: currentLocation[1],
@@ -40,10 +41,17 @@ const SocketProvider = ({ children }) => {
 
     const fetchClients = async () => {
       try {
-        const res = await fetch(`${SERVER_URL}/clients`);
+        const res = await fetch(`${SERVER_URL}/clients` , {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include"
+        });
         const data = await res.json();
-        setClients(() => data);
+        if (res.ok) setClients(() => data);
       } catch (err) {
+        setClients((pre) => []);
         console.error("Error fetching clients:", err);
       }
     };
@@ -66,7 +74,7 @@ const SocketProvider = ({ children }) => {
       socket.off("disconnect");
       clearInterval(interval);
     };
-  }, [user, SERVER_URL]);
+  }, [user]);
 
   // ---------------- Emit location every 10 seconds ----------------
   useEffect(() => {
