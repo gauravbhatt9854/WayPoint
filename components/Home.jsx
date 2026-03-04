@@ -15,17 +15,10 @@ const Home = () => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
 
-  // ✅ Redirect if user is null
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-    }
-  }, [user, navigate]);
-
-  // Optional: show loader while checking user
-  if (!user) {
-    return <div>Checking user...</div>;
-  }
+  useEffect(()=>
+  {
+    if(user == null) navigate("/login")
+  },[user])
 
   return (
     <SocketProvider>

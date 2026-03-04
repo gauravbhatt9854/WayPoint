@@ -23,37 +23,21 @@ const SocketProvider = ({ children }) => {
     return () => watchId && navigator.geolocation.clearWatch(watchId);
   }, []);
 
+
   // ---------------- Socket setup ----------------
   useEffect(() => {
-    if(user==null) return;
+    if (user == null) return;
     if (!socket) return;
     if (!socket.connected) socket.connect();
 
     const registerUser = () => {
       if (!user) return;
       socket.emit("register", {
-        username: user.username || "Anonymous",
+        username: user.name || "Anonymous",
         profileUrl: user.picture || "",
         lat: currentLocation[0],
         lng: currentLocation[1],
       });
-    };
-
-    const fetchClients = async () => {
-      try {
-        const res = await fetch(`${SERVER_URL}/clients` , {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include"
-        });
-        const data = await res.json();
-        if (res.ok) setClients(() => data);
-      } catch (err) {
-        setClients((pre) => []);
-        console.error("Error fetching clients:", err);
-      }
     };
 
     socket.on("connect", () => {
@@ -63,16 +47,22 @@ const SocketProvider = ({ children }) => {
 
     socket.on("disconnect", (reason) => console.warn("Socket disconnected:", reason));
 
-    fetchClients();
+    // fetchClients();
 
     // Then fetch every 5 seconds
-    const interval = setInterval(fetchClients, 5000);
+    // const interval = setInterval(fetchClients, 5000);
+    const handleLocations = (data) => {
+      console.log("📡 Received clients:", data);
+      setClients([...data]);
+    };
 
+    socket.on("allLocations", handleLocations);
 
     return () => {
       socket.off("connect");
       socket.off("disconnect");
-      clearInterval(interval);
+      socket.off("allLocations", handleLocations);
+      // clearInterval(interval);
     };
   }, [user]);
 

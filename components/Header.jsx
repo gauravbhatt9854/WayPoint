@@ -1,14 +1,16 @@
 import { useContext } from "react";
-import Client1 from "./Client1";
+import Clients from "./Clients";
 import { MapContext } from "../providers/MapProvider";
 import { UserContext } from "../providers/UserProvider";
 import { ChatContext } from "../providers/ChatProvider";
 import { FaMap, FaComments, FaServer, FaSignOutAlt, FaLayerGroup } from "react-icons/fa";
+import { SocketContext } from "../providers/SocketProvider";
 
 const Header = () => {
   const { list, currMap, setCurrMap , setIsMap } = useContext(MapContext);
   const { setIsChat } = useContext(ChatContext);
   const { user, handleLogout } = useContext(UserContext);
+  const {clients , setClients} = useContext(SocketContext);
   const logo = import.meta.env.VITE_SAMPLE_LOGO;
 
   return (
@@ -26,7 +28,7 @@ const Header = () => {
 
       {/* Center: Client list */}
       <div className="flex-1 max-w-full overflow-hidden mx-1 sm:mx-2">
-        <Client1 />
+        <Clients clients={clients} />
       </div>
 
       {/* Right: Buttons (mobile: 3 rows, 2 per row) */}

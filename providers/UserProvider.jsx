@@ -12,6 +12,7 @@ const UserProvider = ({ children }) => {
     setUser(null); // remove user from context
     
   };
+  
     return (
         <UserContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser , isLoading , setIsLoading , handleLogout }}>
             {children}
