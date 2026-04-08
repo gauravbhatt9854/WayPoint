@@ -8,7 +8,6 @@ const SocketProvider = ({ children }) => {
   const { user } = useContext(UserContext);
   const [clients, setClients] = useState([]);
   const [currentLocation, setCurrentLocation] = useState([0, 0]);
-  const SERVER_URL = import.meta.env.VITE_SOCKET_SERVER;
 
   // ---------------- Live location updates ----------------
   useEffect(() => {
@@ -27,8 +26,6 @@ const SocketProvider = ({ children }) => {
   // ---------------- Socket setup ----------------
   useEffect(() => {
     if (user == null) return;
-    if (!socket) return;
-    if (!socket.connected) socket.connect();
 
     const registerUser = () => {
       if (!user) return;
@@ -40,7 +37,7 @@ const SocketProvider = ({ children }) => {
       });
     };
 
-    socket.on("connect", () => {
+    socket.on("requestRegistration", () => {
       console.log("Socket connected:", socket.id);
       registerUser();
     });
@@ -52,14 +49,13 @@ const SocketProvider = ({ children }) => {
     // Then fetch every 5 seconds
     // const interval = setInterval(fetchClients, 5000);
     const handleLocations = (data) => {
-      console.log("📡 Received clients:", data);
       setClients([...data]);
     };
 
     socket.on("allLocations", handleLocations);
 
     return () => {
-      socket.off("connect");
+      socket.off("requestRegistration");
       socket.off("disconnect");
       socket.off("allLocations", handleLocations);
       // clearInterval(interval);

@@ -14,20 +14,31 @@ useEffect(() => {
   }
 }, [user]);
 
-  const handleSuccess = async (credentialResponse) => {
-    const token = credentialResponse.credential;
-    if (!token) return;
+const handleSuccess = async (credentialResponse) => {
+  const googleToken = credentialResponse.credential;
+  if (!googleToken) return;
 
-    const decoded = jwtDecode(token);
+  try {
+    const res = await fetch(import.meta.env.VITE_SOCKET_SERVER+"/auth/google", {
+      method: "POST",
+      credentials:"include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token: googleToken }),
+    });
 
-    const user = {
-      name: decoded.name,
-      picture: decoded.picture,
-      email: decoded.email
-    };
+    if (!res.ok) throw new Error("Auth failed");
 
-    setUser((prev) => user);
-  };
+    const data = await res.json();
+    
+    // ✅ set user from backend
+    setUser(data.user);
+
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const handleError = () => {
     console.log("Login Failed");
